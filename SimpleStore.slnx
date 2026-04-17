@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="SimpleStore.API/SimpleStore.API.csproj" />
+  <Project Path="SimpleStore.Application/SimpleStore.Application.csproj" />
+  <Project Path="SimpleStore.Domain/SimpleStore.Domain.csproj" />
+  <Project Path="SimpleStore.Infrastructure/SimpleStore.Infrastructure.csproj" />
+</Solution>
