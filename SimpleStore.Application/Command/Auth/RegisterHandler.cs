@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using SimpleStore.Domain.Constants;
 using SimpleStore.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -29,6 +30,11 @@ namespace SimpleStore.Application.Command.Auth
             };
 
             var result = await _userManager.CreateAsync(user, cmd.Password);
+            if (result.Succeeded)
+            {
+                await _userManager.AddToRoleAsync(user, Roles.Customer);
+            }
+
             return result;
         }
     }

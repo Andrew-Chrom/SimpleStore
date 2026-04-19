@@ -1,12 +1,13 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SimpleStore.API.Query.Categories;
-using SimpleStore.Application.Query.Categories;
-using SimpleStore.Domain.Entities;
-using System.Xml.Linq;
-using Wolverine;
-using SimpleStore.Application.Dto.Category;
 using SimpleStore.Application.Command.Categories;
+using SimpleStore.Application.Dto.Category;
+using SimpleStore.Application.Query.Categories;
+using SimpleStore.Domain.Constants;
+using SimpleStore.Domain.Entities;
+using Wolverine;
 
 namespace SimpleStore.API.Controllers
 {
@@ -33,18 +34,21 @@ namespace SimpleStore.API.Controllers
             return await _bus.InvokeAsync<Category>(new GetCategoryByIdQuery(id));
         }
 
+        [Authorize(Roles = Roles.Admin)]
         [HttpPost]
         public async Task<Guid> CreateProduct([FromBody] СreateUpdateCategoryDto dto)
         {
             return await _bus.InvokeAsync<Guid>(new CreateCategoryCommand(dto.Name));
         }
 
+        [Authorize(Roles = Roles.Admin)]
         [HttpPut("{id}")]
         public async Task UpdateProduct(Guid id, [FromBody] СreateUpdateCategoryDto dto)
         {
             await _bus.InvokeAsync(new UpdateCategoryCommand(id, dto.Name));
         }
 
+        [Authorize(Roles = Roles.Admin)]
         [HttpDelete("{id}")]
         public async Task DeleteProduct(Guid id)
         {

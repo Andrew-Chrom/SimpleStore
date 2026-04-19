@@ -5,6 +5,7 @@ using SimpleStore.API.Query.Products;
 using SimpleStore.Application.Command.Products;
 using SimpleStore.Application.Dto.Product;
 using SimpleStore.Application.Query.Products;
+using SimpleStore.Domain.Constants;
 using SimpleStore.Domain.Entities;
 using System.Xml.Linq;
 using Wolverine;
@@ -33,7 +34,7 @@ namespace SimpleStore.API.Controllers
             return await _bus.InvokeAsync<Product>(new GetProductByIdQuery(id), ct);
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = Roles.Admin)]
         [HttpPost]
         public async Task<Guid> CreateProduct([FromBody] CreateUpdateProductDto dto, CancellationToken ct)
         {
@@ -46,7 +47,7 @@ namespace SimpleStore.API.Controllers
                                     dto.CategoryId), ct);
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = Roles.Admin)]
         [HttpPut("{id}")]
         public async Task UpdateProduct(Guid id, [FromBody] CreateUpdateProductDto dto)
         {
@@ -60,6 +61,7 @@ namespace SimpleStore.API.Controllers
                                     dto.CategoryId));
         }
 
+        [Authorize(Roles = Roles.Admin)]
         [HttpDelete("{id}")]
         public async Task DeleteProduct(Guid id)
         {
