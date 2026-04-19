@@ -1,5 +1,7 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 using SimpleStore.Application.Interfaces.Auth;
+using SimpleStore.Domain.Constants;
 using SimpleStore.Domain.Entities;
 using SimpleStore.Domain.Options;
 using System;
@@ -12,19 +14,26 @@ namespace SimpleStore.Infrastructure.Auth
     public class AccessTokenService : IAccessTokenService
     {
         private readonly ITokenGenerator _tokenGenerator;
+        private readonly UserManager<User> _userManager;
         public readonly JwtSettings _jwtSettings;
-        public AccessTokenService(ITokenGenerator tokenGenerator, IOptions<JwtSettings> jwtSettings)
+        
+        public AccessTokenService(ITokenGenerator tokenGenerator, 
+                IOptions<JwtSettings> jwtSettings,
+                UserManager<User> userManager)
         {
             _tokenGenerator = tokenGenerator;
             _jwtSettings = jwtSettings.Value;
+            _userManager = userManager;
         }
-        public string Generate(User user)
+        public async Task<string> GenerateAsync(User user)
         {
+            var roles = await _userManager.GetRolesAsync(user);
             var claims = new List<Claim>
             {
                 new Claim("id", user.Id.ToString()),
                 new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Name, user.UserName)
+                new Claim(ClaimTypes.Name, user.UserName),
+                new Claim(ClaimTypes.Role, roles.FirstOrDefault() ?? Roles.Customer)
             };
             return _tokenGenerator.Generate(_jwtSettings.AccessTokenSecret,
                 _jwtSettings.Issuer,

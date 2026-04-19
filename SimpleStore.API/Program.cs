@@ -1,13 +1,15 @@
-using Wolverine;
-using SimpleStore.API.Query.Products;
-using SimpleStore.Application.Command.Products;
-using SimpleStore.Domain.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using Microsoft.OpenApi;
-using SimpleStore.Application.Query.Auth;
+using SimpleStore.API.Query.Products;
 using SimpleStore.API.Services;
+using SimpleStore.Application.Command.Products;
+using SimpleStore.Application.Query.Auth;
+using SimpleStore.Domain.Constants;
+using SimpleStore.Domain.Options;
+using System.Text;
+using Wolverine;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -65,6 +67,17 @@ builder.Services.AddAuthentication(options =>
 });
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
+
+    foreach (var role in new[] { Roles.Admin, Roles.Customer })
+    {
+        if (!await roleManager.RoleExistsAsync(role))
+            await roleManager.CreateAsync(new IdentityRole<Guid>(role));
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

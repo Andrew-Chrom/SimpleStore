@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using SimpleStore.Application.Command.Auth;
 using SimpleStore.Application.Dto.Auth;
 using SimpleStore.Application.Query.Auth;
+using SimpleStore.Domain.Constants;
 using Wolverine;
 
 namespace SimpleStore.API.Controllers
@@ -48,5 +50,14 @@ namespace SimpleStore.API.Controllers
             var result = await _bus.InvokeAsync<AuthenticateResponse>(new RefreshCommand(model.RefreshToken, cancellationToken));
             return Ok(result);
         }
+
+        [Authorize(Roles = Roles.Admin)]
+        [HttpPost("role/{userId}")]
+        public async Task<IActionResult> ToggleAdminRole ([FromRoute] Guid userId, CancellationToken cancellationToken)
+        {
+            await _bus.InvokeAsync(new ChangeRoleCommand(userId));
+            return Ok();
+        }
+
     }
 }
