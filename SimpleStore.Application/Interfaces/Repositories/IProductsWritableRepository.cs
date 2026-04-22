@@ -11,6 +11,6 @@ namespace SimpleStore.Application.Interfaces.Repositories
         Task<Product?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
         Task<Guid> CreateAsync(Product product, CancellationToken cancellationToken);
         Task UpdateAsync(Product product, CancellationToken cancellationToken);
-        Task DeleteAsync(Guid id, CancellationToken cancellationToken);
+        Task DeleteAsync(Product product, CancellationToken cancellationToken);
     }
 }

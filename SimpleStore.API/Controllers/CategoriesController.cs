@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SimpleStore.API.Extensions;
 using SimpleStore.API.Query.Categories;
 using SimpleStore.Application.Command.Categories;
+using SimpleStore.Application.Common;
 using SimpleStore.Application.Dto.Category;
 using SimpleStore.Application.Query.Categories;
 using SimpleStore.Domain.Constants;
@@ -21,38 +22,43 @@ namespace SimpleStore.API.Controllers
             _bus = bus;
         }
 
-
         [HttpGet]
-        public async Task<List<Category>> GetCategories([FromQuery] int page, [FromQuery] int pageSize)
+        public async Task<ActionResult<List<Category>>> GetCategories([FromQuery] int page, [FromQuery] int pageSize)
         {
-            return await _bus.InvokeAsync<List<Category>>(new GetAllCategoriesQuery(page, pageSize));
+            var result = await _bus.InvokeAsync<List<Category>>(new GetAllCategoriesQuery(page, pageSize));
+            return Ok(result);
         }
 
         [HttpGet("{id}")]
-        public async Task<Category> GetProductById(Guid id)
+        public async Task<ActionResult<Category>> GetProductById(Guid id)
         {
-            return await _bus.InvokeAsync<Category>(new GetCategoryByIdQuery(id));
+            var result = await _bus.InvokeAsync<Result<Category>>(new GetCategoryByIdQuery(id));
+            return result.ToActionResult();
         }
+
 
         [Authorize(Roles = Roles.Admin)]
         [HttpPost]
-        public async Task<Guid> CreateProduct([FromBody] СreateUpdateCategoryDto dto)
+        public async Task<ActionResult<Guid>> CreateProduct([FromBody] СreateUpdateCategoryDto dto)
         {
-            return await _bus.InvokeAsync<Guid>(new CreateCategoryCommand(dto.Name));
+            var result = await _bus.InvokeAsync<Result<Guid>>(new CreateCategoryCommand(dto.Name));
+            return result.ToActionResult();
         }
 
         [Authorize(Roles = Roles.Admin)]
         [HttpPut("{id}")]
-        public async Task UpdateProduct(Guid id, [FromBody] СreateUpdateCategoryDto dto)
+        public async Task<ActionResult> UpdateProduct(Guid id, [FromBody] СreateUpdateCategoryDto dto)
         {
-            await _bus.InvokeAsync(new UpdateCategoryCommand(id, dto.Name));
+            var result = await _bus.InvokeAsync<Result>(new UpdateCategoryCommand(id, dto.Name));
+            return result.ToActionResult();
         }
 
         [Authorize(Roles = Roles.Admin)]
         [HttpDelete("{id}")]
-        public async Task DeleteProduct(Guid id)
+        public async Task<ActionResult> DeleteProduct(Guid id)
         {
-            await _bus.InvokeAsync(new DeleteCategoryCommand(id));
+            var result = await _bus.InvokeAsync<Result>(new DeleteCategoryCommand(id));
+            return result.ToActionResult();
         }
 
     }

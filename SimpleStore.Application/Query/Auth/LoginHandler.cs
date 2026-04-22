@@ -1,10 +1,9 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using SimpleStore.Application.Common;
 using SimpleStore.Application.Dto.Auth;
+using SimpleStore.Application.Errors;
 using SimpleStore.Application.Interfaces.Auth;
 using SimpleStore.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace SimpleStore.Application.Query.Auth
 {
@@ -20,17 +19,17 @@ namespace SimpleStore.Application.Query.Auth
             _userManager = userManager;
             _authService = authService;
         }
-        public async Task<AuthenticateResponse> Handle(LoginQuery query, CancellationToken ct)
+        public async Task<Result<AuthenticateResponse>> Handle(LoginQuery query, CancellationToken ct)
         {
             var user = await _userManager.FindByEmailAsync(query.Email);
 
             if (user == null)
-                throw new Exception("Unathorized");
+                return DomainErrors.Authentication.Unauthorized;
 
             if (await _userManager.CheckPasswordAsync(user, query.Password))
-                return await _authService.IssueTokensAsync(user, default);
+                return await _authService.IssueTokensAsync(user, ct);
             else
-                throw new Exception("Unathorized");
+                return DomainErrors.Authentication.Unauthorized;
         }
 
     }

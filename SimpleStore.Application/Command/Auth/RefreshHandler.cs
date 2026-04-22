@@ -1,11 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using SimpleStore.Application.Common;
 using SimpleStore.Application.Dto.Auth;
+using SimpleStore.Application.Errors;
 using SimpleStore.Application.Interfaces.Auth;
 using SimpleStore.Application.Interfaces.Repositories;
 using SimpleStore.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace SimpleStore.Application.Command.Auth
 {
@@ -27,19 +26,18 @@ namespace SimpleStore.Application.Command.Auth
             _repository = repository;
             _refreshTokenValidator = refreshTokenValidator;
         }
-        public async Task<AuthenticateResponse> Handle(RefreshCommand cmd, CancellationToken ct)
+        public async Task<Result<AuthenticateResponse>> Handle(RefreshCommand cmd, CancellationToken ct)
         {
             var isValid = _refreshTokenValidator.Validate(cmd.RefreshToken);
-            if (!isValid) throw new Exception("Unathorized");
+            if (!isValid) return DomainErrors.Authentication.Unauthorized;
 
             var refreshToken = await _repository.GetByIdAsync(cmd.RefreshToken,ct);
 
-            if (refreshToken == null) throw new Exception("Unathorized");
-
+            if (refreshToken == null) return DomainErrors.Authentication.Unauthorized;
             await _repository.DeleteAsync(refreshToken, ct);
 
             var user = await _userManager.FindByIdAsync(refreshToken.UserId.ToString());
-            if (user == null) throw new Exception("Unathorized");
+            if (user == null) return DomainErrors.Authentication.Unauthorized;
 
             var response = await _authService.IssueTokensAsync(user, ct);
 

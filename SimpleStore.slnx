@@ -3,4 +3,5 @@
   <Project Path="SimpleStore.Application/SimpleStore.Application.csproj" />
   <Project Path="SimpleStore.Domain/SimpleStore.Domain.csproj" />
   <Project Path="SimpleStore.Infrastructure/SimpleStore.Infrastructure.csproj" />
+  <Project Path="SimpleStore.Tests/SimpleStore.Tests.csproj" Id="52785bf0-995e-435a-9753-f03af81bcfd9" />
 </Solution>

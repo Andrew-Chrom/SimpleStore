@@ -8,7 +8,7 @@ namespace SimpleStore.API.Query.Products
     public record GetAllProductsQuery(int Page=0, int PageSize=25);
     public class GetProductsHandler
     {
-        public readonly IProductsReadonlyRepository _repository;
+        private readonly IProductsReadonlyRepository _repository;
         public GetProductsHandler(IProductsReadonlyRepository repository) 
         {
             _repository = repository;

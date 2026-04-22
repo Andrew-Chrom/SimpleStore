@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
+using SimpleStore.API.Extensions;
 using SimpleStore.Application.Command.Auth;
+using SimpleStore.Application.Common;
 using SimpleStore.Application.Dto.Auth;
 using SimpleStore.Application.Query.Auth;
 using SimpleStore.Domain.Constants;
@@ -22,41 +24,35 @@ namespace SimpleStore.API.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterRequest model)
+        public async Task<ActionResult<string>> Register([FromBody] RegisterRequest model)
         {
 
-            var result = await _bus.InvokeAsync<IdentityResult>(new RegisterCommand(model.Email, model.Password));
+            var result = await _bus.InvokeAsync<Result<string>>(new RegisterCommand(model.Email, model.Password));
 
-            if (result.Succeeded)
-            {
-                return Ok("User created successfully");
-            }
-
-            return BadRequest(result.Errors);
+            return result.ToActionResult();
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginRequest model, CancellationToken ct)
+        public async Task<ActionResult<AuthenticateResponse>> Login([FromBody] LoginRequest model, CancellationToken ct)
         {
-            var result = await _bus.InvokeAsync<AuthenticateResponse>(new LoginQuery(model.Email, model.Password), ct);
-
-            return Ok(result);
+            var result = await _bus.InvokeAsync<Result<AuthenticateResponse>>(new LoginQuery(model.Email, model.Password), ct);
+            return result.ToActionResult();
         }
-
+        
 
         [HttpPost("refresh")]
-        public async Task<IActionResult> Refresh([FromBody] RefreshRequest model, CancellationToken cancellationToken)
+        public async Task<ActionResult<AuthenticateResponse>> Refresh([FromBody] RefreshRequest model, CancellationToken cancellationToken)
         {
-            var result = await _bus.InvokeAsync<AuthenticateResponse>(new RefreshCommand(model.RefreshToken, cancellationToken));
-            return Ok(result);
+            var result = await _bus.InvokeAsync<Result<AuthenticateResponse>>(new RefreshCommand(model.RefreshToken, cancellationToken));
+            return result.ToActionResult();
         }
 
         [Authorize(Roles = Roles.Admin)]
         [HttpPost("role/{userId}")]
-        public async Task<IActionResult> ToggleAdminRole ([FromRoute] Guid userId, CancellationToken cancellationToken)
+        public async Task<ActionResult> ToggleAdminRole ([FromRoute] Guid userId, CancellationToken cancellationToken)
         {
-            await _bus.InvokeAsync(new ChangeRoleCommand(userId));
-            return Ok();
+            var result = await _bus.InvokeAsync<Result>(new ChangeRoleCommand(userId));
+            return result.ToActionResult();
         }
 
     }

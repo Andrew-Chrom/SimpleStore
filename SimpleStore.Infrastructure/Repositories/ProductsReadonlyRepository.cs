@@ -10,7 +10,7 @@ namespace SimpleStore.Infrastructure.Repositories
 {
     internal class ProductsReadonlyRepository : IProductsReadonlyRepository
     {
-        public readonly QueryDbContext _db;
+        private readonly QueryDbContext _db;
 
         public ProductsReadonlyRepository(QueryDbContext db)
         {

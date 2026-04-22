@@ -10,7 +10,7 @@ namespace SimpleStore.Infrastructure.Repositories
 {
     public class ProductsWritableRepository : IProductsWritableRepository
     {
-        public readonly CommandDbContext _db;
+        private readonly CommandDbContext _db;
         public ProductsWritableRepository(CommandDbContext db)
         {
             _db = db;
@@ -32,13 +32,8 @@ namespace SimpleStore.Infrastructure.Repositories
             _db.Products.Update(product);
             await _db.SaveChangesAsync(cancellationToken);
         }
-        public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
+        public async Task DeleteAsync(Product product, CancellationToken cancellationToken)
         {
-            var product = await _db.Products.FindAsync(id);
-            
-            if(product == null)
-                throw new KeyNotFoundException($"Product with id {id} not found.");
-
             _db.Products.Remove(product);
             await _db.SaveChangesAsync(cancellationToken);            
         }

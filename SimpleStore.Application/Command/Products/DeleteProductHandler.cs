@@ -1,23 +1,28 @@
-﻿using SimpleStore.Application.Interfaces.Repositories;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using SimpleStore.Application.Common;
+using SimpleStore.Application.Interfaces.Repositories;
+using SimpleStore.Application.Errors;
 
 namespace SimpleStore.Application.Command.Products
 {
     public record DeleteProductCommand(Guid Id);
-    public class DeleteCategoryHandler
+    public class DeleteProductHandler
     {
-        public readonly IProductsWritableRepository _repository;
+        private readonly IProductsWritableRepository _repository;
 
-        public DeleteCategoryHandler(IProductsWritableRepository repository)
+        public DeleteProductHandler(IProductsWritableRepository repository)
         {
             _repository = repository;
         }
 
-        public async Task Handle(DeleteProductCommand command, CancellationToken cancellationToken)
+        public async Task<Result> Handle(DeleteProductCommand command, CancellationToken cancellationToken)
         {
-            await _repository.DeleteAsync(command.Id, cancellationToken);
+            var product = await _repository.GetByIdAsync(command.Id, cancellationToken);
+
+            if (product == null)
+                return DomainErrors.Product.NotFound;
+
+            await _repository.DeleteAsync(product, cancellationToken);
+            return Result.Success();
         }
     }
 }
