@@ -26,9 +26,11 @@ public static class DependencyInjection
 
 
         services.AddScoped<IProductsWritableRepository, ProductsWritableRepository>();
-
         services.AddScoped<IProductsReadonlyRepository, ProductsReadonlyRepository>();
+
         services.AddScoped<ICategoryRepository, CategoryRepository>();
+        services.AddScoped<ICartRepository, CartRepository>();
+
 
         services.AddScoped<ITokenGenerator, TokenGenerator>();
         services.AddScoped<IAccessTokenService, AccessTokenService>();

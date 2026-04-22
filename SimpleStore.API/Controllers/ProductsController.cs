@@ -1,13 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SimpleStore.API.Extensions;
 using SimpleStore.API.Query.Products;
 using SimpleStore.Application.Command.Products;
+using SimpleStore.Application.Common;
 using SimpleStore.Application.Dto.Product;
 using SimpleStore.Application.Query.Products;
 using SimpleStore.Domain.Constants;
 using SimpleStore.Domain.Entities;
-using System.Xml.Linq;
 using Wolverine;
 
 namespace SimpleStore.API.Controllers
@@ -23,35 +23,40 @@ namespace SimpleStore.API.Controllers
         }
 
         [HttpGet]
-        public async Task<List<ProductListItemDto>> GetProducts([FromQuery] int page, [FromQuery] int pageSize, CancellationToken ct)
+        public async Task<ActionResult<List<ProductListItemDto>>> GetProducts([FromQuery] int page, [FromQuery] int pageSize, CancellationToken ct)
         {
-            return await _bus.InvokeAsync<List<ProductListItemDto>>(new GetAllProductsQuery(page, pageSize), ct);
+            var result = await _bus.InvokeAsync<List<ProductListItemDto>>(new GetAllProductsQuery(page, pageSize), ct);
+            return Ok(result);
         }
 
         [HttpGet("{id}")]
-        public async Task<Product> GetProductById(Guid id, CancellationToken ct)
+        public async Task<ActionResult<Product>> GetProductById(Guid id, CancellationToken ct)
         {
-            return await _bus.InvokeAsync<Product>(new GetProductByIdQuery(id), ct);
+            var result = await _bus.InvokeAsync<Result<Product>>(new GetProductByIdQuery(id), ct);
+
+            return result.ToActionResult();
         }
 
         [Authorize(Roles = Roles.Admin)]
         [HttpPost]
-        public async Task<Guid> CreateProduct([FromBody] CreateUpdateProductDto dto, CancellationToken ct)
+        public async Task<ActionResult<Guid>> CreateProduct([FromBody] CreateUpdateProductDto dto, CancellationToken ct)
         {
-            return await _bus.InvokeAsync<Guid>(new CreateProductCommand(
+            var result = await _bus.InvokeAsync<Result<Guid>>(new CreateProductCommand(
                                     dto.Name,
                                     dto.Description,
                                     dto.Price,
                                     dto.Barcode,
                                     dto.StockQuantity,
                                     dto.CategoryId), ct);
+
+            return result.ToActionResult();
         }
 
         [Authorize(Roles = Roles.Admin)]
         [HttpPut("{id}")]
-        public async Task UpdateProduct(Guid id, [FromBody] CreateUpdateProductDto dto)
+        public async Task<ActionResult> UpdateProduct(Guid id, [FromBody] CreateUpdateProductDto dto)
         {
-            await _bus.InvokeAsync(new UpdateProductCommand(
+            var result = await _bus.InvokeAsync<Result>(new UpdateProductCommand(
                                     id,
                                     dto.Name,
                                     dto.Description,
@@ -59,13 +64,15 @@ namespace SimpleStore.API.Controllers
                                     dto.Barcode,
                                     dto.StockQuantity,
                                     dto.CategoryId));
+            return result.ToActionResult();
         }
 
         [Authorize(Roles = Roles.Admin)]
         [HttpDelete("{id}")]
-        public async Task DeleteProduct(Guid id)
+        public async Task<ActionResult> DeleteProduct(Guid id)
         {
-            await _bus.InvokeAsync(new DeleteProductCommand(id));
+            var result = await _bus.InvokeAsync<Result>(new DeleteProductCommand(id));
+            return result.ToActionResult();
         }
 
     }

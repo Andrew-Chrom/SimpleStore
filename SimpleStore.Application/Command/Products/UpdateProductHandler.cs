@@ -1,9 +1,8 @@
 ﻿using FluentValidation;
+using SimpleStore.Application.Common;
+using SimpleStore.Application.Errors;
 using SimpleStore.Application.Interfaces.Repositories;
 using SimpleStore.Application.Validators;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace SimpleStore.Application.Command.Products
 {
@@ -17,35 +16,27 @@ namespace SimpleStore.Application.Command.Products
         Guid CategoryId);
     public class UpdateProductHandler
     {
-        public readonly IProductsWritableRepository _repository;
+        private readonly IProductsWritableRepository _repository;
 
         public UpdateProductHandler(IProductsWritableRepository repository)
         {
             _repository = repository;
         }
 
-        public async Task Handle(UpdateProductCommand command, CancellationToken cancellationToken)
+        public async Task<Result> Handle(UpdateProductCommand command, CancellationToken cancellationToken)
         {
             var validator = new UpdateProductCommandValidator();
             var result = validator.Validate(command);
 
             if (!result.IsValid)
-            {
-                var error = "";
-                foreach (var failure in result.Errors)
-                {
-                    error += failure + "\n";
-                }
-
-                throw new ValidationException(error);
-            }
+                return Result.Failure(DomainErrors.Product.Validation);
+            
 
             var product = await _repository.GetByIdAsync(command.Id, cancellationToken);
 
             if (product == null)
-            {
-                throw new KeyNotFoundException($"Product with ID {command.Id} not found.");
-            }
+                return Result.Failure(DomainErrors.Product.NotFound);
+            
 
             product.Name = command.Name;
             product.Description = command.Description;
@@ -55,6 +46,7 @@ namespace SimpleStore.Application.Command.Products
             product.CategoryId = command.CategoryId;
 
             await _repository.UpdateAsync(product, cancellationToken);
+            return Result.Success();
         }
     }
 }

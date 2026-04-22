@@ -8,7 +8,7 @@ namespace SimpleStore.API.Query.Categories
     public record GetAllCategoriesQuery(int Page=0, int PageSize=25);
     public class GetCategoriesHandler
     {
-        public readonly ICategoryRepository _repository;
+        private readonly ICategoryRepository _repository;
         public GetCategoriesHandler(ICategoryRepository repository) 
         {
             _repository = repository;

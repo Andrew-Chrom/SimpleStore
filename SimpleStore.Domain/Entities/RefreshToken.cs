@@ -10,7 +10,6 @@ namespace SimpleStore.Domain.Entities
         public Guid Id { get; set; }
         public string Token { get; set; }
         public Guid UserId { get; set; }
-        [ForeignKey(nameof(UserId))]
-        public User User;
+        public User User { get; set; }
     }
 }

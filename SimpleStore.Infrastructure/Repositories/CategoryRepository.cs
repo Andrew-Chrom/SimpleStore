@@ -9,7 +9,7 @@ namespace SimpleStore.Infrastructure.Repositories
 {
     public class CategoryRepository : ICategoryRepository
     {
-        public ApplicationDbContext _context;
+        private readonly ApplicationDbContext _context;
 
         public CategoryRepository(ApplicationDbContext context)
         {
@@ -24,7 +24,7 @@ namespace SimpleStore.Infrastructure.Repositories
         }
         public async Task<Category?> GetByIdAsync(Guid id, CancellationToken ct)
         {
-            return _context.Categories.FirstOrDefault(c => c.Id == id);
+            return await _context.Categories.FirstOrDefaultAsync(c => c.Id == id);
         }
         public async Task<Guid> AddAsync(Category category, CancellationToken ct)
         {
@@ -38,12 +38,8 @@ namespace SimpleStore.Infrastructure.Repositories
             await _context.SaveChangesAsync(ct);
             return category.Id;
         }
-        public async Task DeleteAsync(Guid id, CancellationToken ct)
+        public async Task DeleteAsync(Category category, CancellationToken ct)
         {
-            var category = await _context.Categories.FindAsync(id);
-            if (category == null)
-                throw new KeyNotFoundException($"Category with id {id} not found.");
-
             _context.Categories.Remove(category);
             await _context.SaveChangesAsync(ct);
         }
