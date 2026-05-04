@@ -1,13 +1,13 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi;
 using SimpleStore.API.Query.Products;
 using SimpleStore.API.Services;
 using SimpleStore.Application.Command.Products;
 using SimpleStore.Application.Query.Auth;
 using SimpleStore.Domain.Constants;
 using SimpleStore.Domain.Options;
+using SimpleStore.Infrastructure.Options;
 using System.Text;
 using Wolverine;
 
@@ -30,6 +30,9 @@ builder.Host.UseWolverine(opts =>
 });
 
 builder.Services.AddInfrastructure(builder.Configuration);
+
+builder.Services.AddOptions<StripeSettings>()
+    .Bind(builder.Configuration.GetSection("StripeSettings"));
 
 builder.Services.AddOptions<JwtSettings>()
     .Bind(builder.Configuration.GetSection("JwtSettings"))

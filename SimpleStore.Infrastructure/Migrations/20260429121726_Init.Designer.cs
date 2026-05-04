@@ -12,8 +12,8 @@ using SimpleStore.Infrastructure;
 namespace SimpleStore.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260411165421_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260429121726_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -289,6 +289,26 @@ namespace SimpleStore.Infrastructure.Migrations
                     b.ToTable("Products");
                 });
 
+            modelBuilder.Entity("SimpleStore.Domain.Entities.RefreshToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshTokens");
+                });
+
             modelBuilder.Entity("SimpleStore.Domain.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -465,7 +485,7 @@ namespace SimpleStore.Infrastructure.Migrations
             modelBuilder.Entity("SimpleStore.Domain.Entities.OrderItem", b =>
                 {
                     b.HasOne("SimpleStore.Domain.Entities.Order", "Order")
-                        .WithMany()
+                        .WithMany("OrderItems")
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -492,6 +512,17 @@ namespace SimpleStore.Infrastructure.Migrations
                     b.Navigation("Category");
                 });
 
+            modelBuilder.Entity("SimpleStore.Domain.Entities.RefreshToken", b =>
+                {
+                    b.HasOne("SimpleStore.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("SimpleStore.Domain.Entities.WishlistItem", b =>
                 {
                     b.HasOne("SimpleStore.Domain.Entities.Product", "Product")
@@ -509,6 +540,11 @@ namespace SimpleStore.Infrastructure.Migrations
                     b.Navigation("Product");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SimpleStore.Domain.Entities.Order", b =>
+                {
+                    b.Navigation("OrderItems");
                 });
 #pragma warning restore 612, 618
         }

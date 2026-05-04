@@ -1,14 +1,16 @@
-﻿// SimpleStore.Infrastructure/DependencyInjection.cs
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SimpleStore.Application.Interfaces.Auth;
+using SimpleStore.Application.Interfaces.Orders;
 using SimpleStore.Application.Interfaces.Repositories;
 using SimpleStore.Domain.Entities;
+using SimpleStore.Domain.Stripe;
 using SimpleStore.Infrastructure;
 using SimpleStore.Infrastructure.Auth;
 using SimpleStore.Infrastructure.Repositories;
+using SimpleStore.Infrastructure.Stripe;
 
 public static class DependencyInjection
 {
@@ -30,7 +32,12 @@ public static class DependencyInjection
 
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<ICartRepository, CartRepository>();
+        
+        services.AddScoped<IOrderRepository, OrderRepository>();
+        services.AddScoped<IOrderItemRepository, OrderItemRepository>();
 
+        services.AddScoped<IOrderService, StripeService>();
+        services.AddScoped<IWebhookParser, StripeWebhook>();
 
         services.AddScoped<ITokenGenerator, TokenGenerator>();
         services.AddScoped<IAccessTokenService, AccessTokenService>();
