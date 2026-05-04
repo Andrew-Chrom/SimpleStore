@@ -1,7 +1,4 @@
 ﻿using SimpleStore.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.EntityFrameworkCore;
 using SimpleStore.Application.Interfaces.Repositories;
 

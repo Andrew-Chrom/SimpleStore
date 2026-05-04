@@ -14,7 +14,7 @@ namespace SimpleStore.Infrastructure.Configurations
             builder.HasKey(p => p.Id);
 
             builder.HasOne(p => p.Order)
-                .WithMany()
+                .WithMany(o => o.OrderItems)
                 .HasForeignKey(p => p.OrderId)
                 .OnDelete(DeleteBehavior.Restrict);
 

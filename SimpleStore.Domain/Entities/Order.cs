@@ -13,7 +13,7 @@ namespace SimpleStore.Domain.Entities
         public OrderStatus Status { get; set; }
         public string? StripeSessionId { get; set; }
         public string? StripePaymentIntentId { get; set; }
-
+        public ICollection<OrderItem> OrderItems { get; set; }
     }
 
     public enum OrderStatus
