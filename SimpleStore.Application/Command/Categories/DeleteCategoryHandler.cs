@@ -21,6 +21,7 @@ namespace SimpleStore.Application.Command.Categories
                 return DomainErrors.Category.NotFound;
 
             await _repository.DeleteAsync(category, cancellationToken);
+            await _repository.SaveChangesAsync(cancellationToken);
             return Result.Success();
         }
     }

@@ -5,7 +5,6 @@ using SimpleStore.API.Extensions;
 using SimpleStore.Application.Command.Order;
 using SimpleStore.Application.Common;
 using SimpleStore.Application.Query.Orders;
-using SimpleStore.Domain.Constants;
 using SimpleStore.Domain.Entities;
 using SimpleStore.Infrastructure.Options;
 using System.Security.Claims;
@@ -23,14 +22,12 @@ namespace SimpleStore.API.Controllers
         {
             _bus = bus;
         }
-
-        [Authorize(Roles = Roles.Admin)]
         [HttpGet]
-        public async Task<IActionResult> GetOrders([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetOrders([FromQuery] int page = 1, [FromQuery] int pageSize = 50)
         {
             var userId = User.FindFirstValue("id");
             
-            var orders = _bus.InvokeAsync<List<Order>>(new GetOrdersQuery(Guid.Parse(userId), page, pageSize)).Result;
+            var orders = await _bus.InvokeAsync<List<Order>>(new GetOrdersQuery(Guid.Parse(userId), page, pageSize));
             return Ok(orders);
         }
 

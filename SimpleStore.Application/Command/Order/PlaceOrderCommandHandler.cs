@@ -1,7 +1,9 @@
-﻿using SimpleStore.Application.Common;
+﻿using Microsoft.Extensions.Logging;
+using SimpleStore.Application.Common;
 using SimpleStore.Application.Errors;
 using SimpleStore.Application.Interfaces.Orders;
 using SimpleStore.Application.Interfaces.Repositories;
+using SimpleStore.Application.Interfaces.UnitOfWork;
 using SimpleStore.Domain.Entities;
 
 namespace SimpleStore.Application.Command.Order
@@ -10,21 +12,24 @@ namespace SimpleStore.Application.Command.Order
     public class PlaceOrderCommandHandler
     {
         private readonly IOrderRepository _orderRepository;
-        private readonly IOrderItemRepository _orderItemRepository;
         private readonly ICartRepository _cartRepository;
-        private readonly IProductsReadonlyRepository _productRepository;
+        private readonly IProductsWritableRepository _productWritbaleRepository;
         private readonly IOrderService _orderService;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly ILogger<PlaceOrderCommandHandler> _logger;
         public PlaceOrderCommandHandler(IOrderRepository orderRepository, 
             ICartRepository cartRepository,
             IOrderService orderService,
-            IProductsReadonlyRepository productRepository,
-            IOrderItemRepository orderItemRepository)
+            IProductsWritableRepository productWritbaleRepository,
+            IUnitOfWork unitOfWork,
+            ILogger<PlaceOrderCommandHandler> logger)
         {
             _orderRepository = orderRepository;
             _cartRepository = cartRepository;
             _orderService = orderService;
-            _productRepository = productRepository;
-            _orderItemRepository = orderItemRepository;
+            _productWritbaleRepository = productWritbaleRepository;
+            _unitOfWork = unitOfWork;
+            _logger = logger;
         }
 
         public async Task<Result<string>> Handle(PlaceOrderCommand cmd, CancellationToken ct)
@@ -32,33 +37,52 @@ namespace SimpleStore.Application.Command.Order
             var cartItems = await _cartRepository.GetAllAsync(cmd.UserId, ct);
             var carts = cartItems.Items;
 
-            if (carts is null)
+            if (carts is null || !carts.Any())
                 return DomainErrors.Cart.NotFound;
 
             var order = new Domain.Entities.Order
             {
                 UserId = cmd.UserId,
                 CreatedAt = DateTime.UtcNow,
-                Status = OrderStatus.Pending
-            };
-            var orderId = await _orderRepository.AddAsync(order, ct);
-
-            foreach (var item in carts)
-            {
-                var product = await _productRepository.GetByIdAsync(item.ProductId, ct);
-                var orderItem = new OrderItem
+                Status = OrderStatus.Pending,
+                OrderItems = carts.Select(item => new OrderItem
                 {
-                    OrderId = orderId,
                     ProductId = item.ProductId,
                     Quantity = item.Quantity,
-                    UnitPrice = product.Price
-                };
-                await _orderItemRepository.AddAsync(orderItem, ct);
-                await _cartRepository.DeleteAsync(item, ct);
+                    UnitPrice = item.Product.Price,
+                    Product = item.Product 
+                }).ToList()
+            };
+
+            var productIds = order.OrderItems.Select(i => i.ProductId).ToList();
+            var products = await _productWritbaleRepository.GetByIdsAsync(productIds, ct);
+            var productsDictionary = products.ToDictionary(p => p.Id);
+
+            foreach (var item in order.OrderItems)
+            {
+                if (!productsDictionary.TryGetValue(item.ProductId, out var product))
+                    return DomainErrors.Product.NotFound;
+
+                if (product.StockQuantity < item.Quantity)
+                    return DomainErrors.Order.Conflict;
+                item.Product = product;
+                product.StockQuantity -= item.Quantity;
             }
-            var orderWithItems = await _orderRepository.GetByIdAsync(orderId, ct);
-            var checkoutUrl = await _orderService.CreateCheckoutSessionAsync(orderWithItems, ct);
-            return checkoutUrl;
+            await _productWritbaleRepository.UpdateRangeAsync(products, ct);
+
+            await _orderRepository.AddAsync(order, ct);
+
+            var stripeResponse = await _orderService.CreateCheckoutSessionAsync(order, ct);
+
+            order.StripeSessionId = stripeResponse.SessionId;
+            order.StripePaymentIntentId = stripeResponse.PaymentIntentId;
+
+            await _cartRepository.ClearCartAsync(cmd.UserId, ct);
+
+            var savedRows = await _unitOfWork.SaveChangesAsync(ct);
+            _logger.LogInformation($"Saved rows: {savedRows}");
+
+            return stripeResponse.Url;
         }
     }
 }

@@ -36,7 +36,10 @@ namespace SimpleStore.Application.Command.Categories
                 Name = command.Name
             };
 
-            return await _repository.AddAsync(category, cancellationToken);
+            
+            var id = await _repository.AddAsync(category, cancellationToken);
+            await _repository.SaveChangesAsync(cancellationToken);
+            return id;
         }
     }
 }

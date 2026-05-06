@@ -13,6 +13,8 @@ namespace SimpleStore.Application.Interfaces.Repositories
         Task UpdateAsync(CartItem cartItem, CancellationToken ct);
         Task<Guid> AddAsync(CartItem cartItem, CancellationToken ct);
         Task DeleteAsync(CartItem cartItem, CancellationToken ct);
+        Task ClearCartAsync(Guid userId, CancellationToken ct);
+        Task SaveChangesAsync(CancellationToken ct);
 
     }
 }

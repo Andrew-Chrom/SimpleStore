@@ -22,6 +22,7 @@ namespace SimpleStore.Application.Command.Products
                 return DomainErrors.Product.NotFound;
 
             await _repository.DeleteAsync(product, cancellationToken);
+            await _repository.SaveChangesAsync(cancellationToken);
             return Result.Success();
         }
     }

@@ -1,6 +1,7 @@
-﻿using SimpleStore.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using SimpleStore.Application.Dto.Category;
 using SimpleStore.Application.Interfaces.Repositories;
+using SimpleStore.Domain.Entities;
 
 namespace SimpleStore.Infrastructure.Repositories
 {
@@ -12,32 +13,34 @@ namespace SimpleStore.Infrastructure.Repositories
         {
             _context = context;
         }
-        public async Task<List<Category>> GetAllAsync(int page, int pageSize, CancellationToken ct)
+        public async Task<List<Category>> GetAllAsync(int page = 1, int pageSize = 25, CancellationToken ct = default)
         {
             return await _context.Categories
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync(ct);
         }
-        public async Task<Category?> GetByIdAsync(Guid id, CancellationToken ct)
+        public async Task<Category> GetByIdAsync(Guid id, CancellationToken ct)
         {
-            return await _context.Categories.FirstOrDefaultAsync(c => c.Id == id);
+            return await _context.Categories
+                .FirstOrDefaultAsync(c => c.Id == id, ct);
         }
         public async Task<Guid> AddAsync(Category category, CancellationToken ct)
         {
             _context.Categories.Add(category);
-            await _context.SaveChangesAsync(ct);
             return category.Id;
         }
         public async Task<Guid> UpdateAsync(Category category, CancellationToken ct)
         {
             _context.Categories.Update(category);
-            await _context.SaveChangesAsync(ct);
             return category.Id;
         }
         public async Task DeleteAsync(Category category, CancellationToken ct)
         {
             _context.Categories.Remove(category);
+        }
+        public async Task SaveChangesAsync(CancellationToken ct)
+        {
             await _context.SaveChangesAsync(ct);
         }
     }

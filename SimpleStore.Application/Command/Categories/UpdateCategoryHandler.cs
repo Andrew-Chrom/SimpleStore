@@ -1,11 +1,7 @@
-﻿using FluentValidation;
-using SimpleStore.Application.Common;
+﻿using SimpleStore.Application.Common;
 using SimpleStore.Application.Errors;
 using SimpleStore.Application.Interfaces.Repositories;
 using SimpleStore.Application.Validators;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace SimpleStore.Application.Command.Categories
 {
@@ -39,6 +35,7 @@ namespace SimpleStore.Application.Command.Categories
             category.Name = command.Name;
             
             await _repository.UpdateAsync(category, cancellationToken);
+            await _repository.SaveChangesAsync(cancellationToken);
             return Result.Success();
         }
     }

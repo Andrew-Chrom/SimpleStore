@@ -22,8 +22,8 @@ namespace SimpleStore.Application.Command.Auth
 
             if (user == null)
                 return DomainErrors.Authentication.NotFound;
-
-            var currentRole = (await _userManager.GetRolesAsync(user))[0];
+            var roles = await _userManager.GetRolesAsync(user);
+            var currentRole = roles.FirstOrDefault();
             var newRole = currentRole == Roles.Admin ? Roles.Customer : Roles.Admin;
 
             await _userManager.RemoveFromRoleAsync(user, currentRole);

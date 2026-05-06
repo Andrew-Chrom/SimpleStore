@@ -39,8 +39,9 @@ namespace SimpleStore.Application.Command.Products
                 StockQuantity = command.StockQuantity,
                 CategoryId = command.CategoryId
             };
-
-            return await _repository.CreateAsync(product, cancellationToken);
+            var id = await _repository.CreateAsync(product, cancellationToken);
+            await _repository.SaveChangesAsync(cancellationToken);
+            return id;
         }
     }
 }

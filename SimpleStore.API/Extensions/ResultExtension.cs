@@ -29,9 +29,11 @@ namespace SimpleStore.API.Extensions
 
             return result.Error!.Type switch
             {
-                ErrorType.NotFound => new NotFoundObjectResult(result.Error),
-                ErrorType.Validation => new BadRequestObjectResult(result.Error),
+                ErrorType.BadRequest => new BadRequestObjectResult(result.Error),
                 ErrorType.Unauthorized => new UnauthorizedObjectResult(result.Error),
+                ErrorType.NotFound => new NotFoundObjectResult(result.Error),
+                ErrorType.Validation => new ObjectResult(result.Error) { StatusCode = 422 },
+                ErrorType.Conflict => new ConflictObjectResult(result.Error),
                 _ => new ObjectResult(result.Error) { StatusCode = 500 }
             };
         }

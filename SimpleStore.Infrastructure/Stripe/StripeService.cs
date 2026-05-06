@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using SimpleStore.Application.Dto.Orders;
 using SimpleStore.Application.Interfaces.Orders;
 using SimpleStore.Application.Interfaces.Repositories;
 using SimpleStore.Infrastructure.Options;
@@ -11,21 +12,18 @@ namespace SimpleStore.Domain.Stripe
     public class StripeService : IOrderService
     {
         private readonly StripeSettings _stripeSettings;
-        private readonly IOrderRepository _orderRepository;
         ILogger<StripeService> _logger;
         public StripeService(IOptions<StripeSettings> stripeSettings,
-            IOrderRepository orderRepository,
             ILogger<StripeService> logger)
         {
             _stripeSettings = stripeSettings.Value;
-            _orderRepository = orderRepository;
             _logger = logger;
         }
-        public async Task<string> CreateCheckoutSessionAsync(Entities.Order order, CancellationToken ct)
+        public async Task<CheckoutSessionResponse> CreateCheckoutSessionAsync(Entities.Order order, CancellationToken ct)
         {
             StripeConfiguration.ApiKey = _stripeSettings.SecretKey;
 
-            _logger.LogInformation($"{order.OrderItems}");
+            _logger.LogInformation($"Order Id = {order.Id}");
 
             var lineItems = order.OrderItems.Select(item => new SessionLineItemOptions
             {
@@ -57,11 +55,7 @@ namespace SimpleStore.Domain.Stripe
             var service = new SessionService();
             var session = await service.CreateAsync(options, cancellationToken: ct);
 
-            order.StripeSessionId = session.Id;
-            order.StripePaymentIntentId = session.PaymentIntentId;
-            await _orderRepository.UpdateAsync(order, ct);
-            
-            return session.Url;
+            return new CheckoutSessionResponse(session.Url, session.Id, session.PaymentIntentId); ;
         }
     }
 }

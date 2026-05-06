@@ -3,9 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using SimpleStore.Application.Dto.Cart;
 using SimpleStore.Application.Interfaces.Repositories;
 using SimpleStore.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace SimpleStore.Infrastructure.Repositories
 {
@@ -22,9 +19,10 @@ namespace SimpleStore.Infrastructure.Repositories
             decimal totalPrice = _context.CartItems
                 .Where(cartItem => cartItem.UserId == userId)
                 .Sum(cartItem => cartItem.Quantity * cartItem.Product.Price);
-            List<CartItem> cartItems = await _context.CartItems
+            var cartItems = await _context.CartItems
+                .Include(p => p.Product)
                 .Where(cartItem => cartItem.UserId == userId)
-                .ToListAsync();
+                .ToListAsync(ct);
             return new CartResponse
             {
                 Items = cartItems,
@@ -44,19 +42,27 @@ namespace SimpleStore.Infrastructure.Repositories
         public async Task UpdateAsync(CartItem cartItem, CancellationToken ct)
         {
             _context.CartItems.Update(cartItem);
-            await _context.SaveChangesAsync(ct);
         }
 
         public async Task<Guid> AddAsync(CartItem cartItem, CancellationToken ct)
         {
             await _context.CartItems.AddAsync(cartItem);
-            await _context.SaveChangesAsync(ct);
 
             return cartItem.Id;
         }
         public async Task DeleteAsync(CartItem cartItem, CancellationToken ct)
         {
             _context.CartItems.Remove(cartItem);
+        }
+
+        public async Task ClearCartAsync(Guid userId, CancellationToken ct)
+        {
+            var items = _context.CartItems.Where(x => x.UserId == userId);
+            _context.CartItems.RemoveRange(items);
+        }
+
+        public async Task SaveChangesAsync(CancellationToken ct)
+        {
             await _context.SaveChangesAsync(ct);
         }
     }

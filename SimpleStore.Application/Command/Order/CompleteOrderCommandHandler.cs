@@ -9,13 +9,10 @@ namespace SimpleStore.Application.Command.Order
     public class CompleteOrderCommandHandler
     {
         private readonly IOrderRepository _orderRepository;
-        private readonly IProductsWritableRepository _productRepository;
         public CompleteOrderCommandHandler(
-        IOrderRepository orderRepository,
-        IProductsWritableRepository productRepository)
+        IOrderRepository orderRepository)
         {
             _orderRepository = orderRepository;
-            _productRepository = productRepository;
         }
 
         public async Task<Result> Handle(CompleteOrderCommand cmd, CancellationToken ct)
@@ -25,21 +22,10 @@ namespace SimpleStore.Application.Command.Order
             if (order is null)
                 return DomainErrors.Order.NotFound;
 
-            foreach (var item in order.OrderItems)
-            {
-                var product = await _productRepository.GetByIdAsync(item.ProductId, ct);
-
-                if (product is null)
-                    return DomainErrors.Product.NotFound;
-                if (product.StockQuantity < item.Quantity)
-                    return DomainErrors.Order.Conflict;
-
-                product.StockQuantity -= item.Quantity;
-                await _productRepository.UpdateAsync(product, ct);
-            }
-
             order.Status = OrderStatus.Paid;
             await _orderRepository.UpdateAsync(order, ct);
+            await _orderRepository.SaveChangesAsync(ct);
+
             return Result.Success();
         }
 

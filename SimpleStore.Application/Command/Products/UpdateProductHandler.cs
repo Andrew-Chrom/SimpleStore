@@ -46,6 +46,7 @@ namespace SimpleStore.Application.Command.Products
             product.CategoryId = command.CategoryId;
 
             await _repository.UpdateAsync(product, cancellationToken);
+            await _repository.SaveChangesAsync(cancellationToken);
             return Result.Success();
         }
     }

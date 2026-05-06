@@ -34,7 +34,10 @@ namespace SimpleStore.Application.Command.Cart
                 return DomainErrors.Product.NotFound;
 
             var cartItem = new CartItem { ProductId = cmd.ProductId, UserId = cmd.UserId, Quantity = 1 };
-            return await _cartRepository.AddAsync(cartItem, ct);
+            var result = await _cartRepository.AddAsync(cartItem, ct);
+            await _cartRepository.SaveChangesAsync(ct);
+            return result;
+
         }
 
     }

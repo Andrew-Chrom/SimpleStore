@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SimpleStore.Application.Interfaces.Auth;
 using SimpleStore.Application.Interfaces.Orders;
 using SimpleStore.Application.Interfaces.Repositories;
+using SimpleStore.Application.Interfaces.UnitOfWork;
 using SimpleStore.Domain.Entities;
 using SimpleStore.Domain.Stripe;
 using SimpleStore.Infrastructure;
@@ -38,6 +39,7 @@ public static class DependencyInjection
 
         services.AddScoped<IOrderService, StripeService>();
         services.AddScoped<IWebhookParser, StripeWebhook>();
+        services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<CommandDbContext>());
 
         services.AddScoped<ITokenGenerator, TokenGenerator>();
         services.AddScoped<IAccessTokenService, AccessTokenService>();

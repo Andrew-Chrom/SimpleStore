@@ -15,7 +15,7 @@ namespace SimpleStore.Infrastructure.Repositories
         {
             _ctx = ctx;
         }
-        public async Task<List<OrderItem>> GetAllAsync(int page, int pageSize, CancellationToken ct)
+        public async Task<List<OrderItem>> GetAllAsync(int page = 1, int pageSize = 25, CancellationToken ct = default)
         {
             return await _ctx.OrderItems
                 .Skip((page - 1) * pageSize)
@@ -29,19 +29,22 @@ namespace SimpleStore.Infrastructure.Repositories
         public async Task<Guid> AddAsync(OrderItem order, CancellationToken ct)
         {
             _ctx.OrderItems.Add(order);
-            await _ctx.SaveChangesAsync(ct);
             return order.Id;
         }
         public async Task<Guid> UpdateAsync(OrderItem order, CancellationToken ct)
         {
             _ctx.OrderItems.Update(order);
-            await _ctx.SaveChangesAsync(ct);
             return order.Id;
         }
         public async Task DeleteAsync(OrderItem order, CancellationToken ct)
         {
             _ctx.OrderItems.Remove(order);
+        }
+
+        public async Task SaveChangesAsync(CancellationToken ct)
+        {
             await _ctx.SaveChangesAsync(ct);
         }
+
     }
 }

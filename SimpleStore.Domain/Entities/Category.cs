@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
+﻿
 namespace SimpleStore.Domain.Entities
 {
     public class Category

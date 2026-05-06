@@ -41,6 +41,8 @@ namespace SimpleStore.Application.Command.Cart
 
             cartItem.Quantity = command.Quantity;
             await _cartRepository.UpdateAsync(cartItem, ct);
+
+            await _cartRepository.SaveChangesAsync(ct);
             return Result.Success();
         }
     }

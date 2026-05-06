@@ -29,6 +29,7 @@ namespace SimpleStore.Application.Command.Cart
             }
 
             await _repository.DeleteAsync(cartItem, ct);
+            await _repository.SaveChangesAsync(ct);
             return Result.Success();
         }
 

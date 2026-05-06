@@ -16,7 +16,7 @@ namespace SimpleStore.Infrastructure.Repositories
         }
         public async Task<RefreshToken?> GetByIdAsync(string token, CancellationToken ct)
         {
-            return await _context.RefreshTokens.FirstOrDefaultAsync(x => x.Token == token);
+            return await _context.RefreshTokens.FirstOrDefaultAsync(x => x.Token == token, ct);
         }
         public async Task DeleteAsync(RefreshToken token, CancellationToken ct)
         { 

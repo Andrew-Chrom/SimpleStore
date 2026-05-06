@@ -1,12 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis;
 using SimpleStore.API.Extensions;
 using SimpleStore.Application.Command.Cart;
 using SimpleStore.Application.Common;
 using SimpleStore.Application.Dto.Cart;
 using SimpleStore.Application.Query.Cart;
-using SimpleStore.Domain.Entities;
 using System.Security.Claims;
 using Wolverine;
 
@@ -58,5 +56,13 @@ namespace SimpleStore.API.Controllers
             var result = await _bus.InvokeAsync<Result>(new UpdateCartItemQuantityCommand(Guid.Parse(userId), productId, quantity.Quantity));
             return result.ToActionResult();     
         }
+
+
+        //[HttpDelete]
+        //public async Task<ActionResult> ClearCart()
+        //{
+        //    var userId = User.FindFirstValue("id");
+        //    var result = await _bus.InvokeAsync<Result>(new ClearCartCommand(Guid.Parse(userId)));
+        //    return result.ToActionResult();
+        //}
     }
-}
