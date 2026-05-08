@@ -49,12 +49,12 @@ namespace SimpleStore.API.Controllers
         }
 
         [HttpPatch("{productId}")]
-        public async Task<ActionResult> UpdateCartItemQuantity([FromRoute] Guid productId, [FromBody]ItemQuantityDto quantity)
+        public async Task<ActionResult> UpdateCartItemQuantity([FromRoute] Guid productId, [FromBody] ItemQuantityDto quantity)
         {
             var userId = User.FindFirstValue("id");
 
             var result = await _bus.InvokeAsync<Result>(new UpdateCartItemQuantityCommand(Guid.Parse(userId), productId, quantity.Quantity));
-            return result.ToActionResult();     
+            return result.ToActionResult();
         }
 
 
@@ -66,3 +66,4 @@ namespace SimpleStore.API.Controllers
         //    return result.ToActionResult();
         //}
     }
+}
