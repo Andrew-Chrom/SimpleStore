@@ -25,12 +25,12 @@ namespace SimpleStore.Application.Errors
         public static class Cart
         {
             public static readonly DomainError NotFound = new("CartItem.NotFound", ErrorType.NotFound, "CartItem item not found");
-            public static readonly DomainError Conflict = new("CartItem.Conflict", ErrorType.Validation, "CartItem conflict ");
+            public static readonly DomainError Conflict = new("CartItem.Conflict", ErrorType.Conflict, "CartItem conflict ");
         }
         public static class Order
         {
             public static readonly DomainError NotFound = new("Order.NotFound", ErrorType.NotFound, "Order item not found");
-            public static readonly DomainError Conflict = new("Order.Conflict", ErrorType.Validation, "Order conflict ");
+            public static readonly DomainError Conflict = new("Order.Conflict", ErrorType.Conflict, "Order conflict ");
         }
 
         public static class Payment

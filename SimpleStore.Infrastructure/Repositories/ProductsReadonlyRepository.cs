@@ -1,15 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SimpleStore.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using SimpleStore.Application.Dto.Product;
 using SimpleStore.Application.Interfaces.Repositories;
-using SimpleStore.Application.Dto.Orders;
 
 namespace SimpleStore.Infrastructure.Repositories
 {
-    internal class ProductsReadonlyRepository : IProductsReadonlyRepository
+    public class ProductsReadonlyRepository : IProductsReadonlyRepository
     {
         private readonly QueryDbContext _db;
 

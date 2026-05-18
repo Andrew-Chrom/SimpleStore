@@ -14,5 +14,6 @@ namespace SimpleStore.Application.Interfaces.Repositories
         Task UpdateAsync(Product product, CancellationToken cancellationToken);
         Task UpdateRangeAsync(IEnumerable<Product> products, CancellationToken ct);
         Task DeleteAsync(Product product, CancellationToken cancellationToken);
+        Task SaveChangesAsync(CancellationToken ct);
     }
 }
