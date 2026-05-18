@@ -24,7 +24,7 @@ namespace SimpleStore.API.Controllers
         [HttpGet]
         public async Task<ActionResult<CartResponse>> GetCart()
         {
-            var userId = User.FindFirstValue("id");
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var result = await _bus.InvokeAsync<CartResponse>(new GetCartQuery(Guid.Parse(userId)));
             return Ok(result);
         }
@@ -32,7 +32,7 @@ namespace SimpleStore.API.Controllers
         [HttpPost("{productId}")]
         public async Task<ActionResult<Guid>> AddToCart(Guid productId)
         {
-            var userId = User.FindFirstValue("id");
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             var result = await _bus.InvokeAsync<Result>(new AddToCartCommand(Guid.Parse(userId), productId));
             return result.ToActionResult();
@@ -41,7 +41,7 @@ namespace SimpleStore.API.Controllers
         [HttpDelete("{productId}")]
         public async Task<ActionResult> RemoveFromCart(Guid productId)
         {
-            var userId = User.FindFirstValue("id");
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             var result = await _bus.InvokeAsync<Result>(new RemoveFromCartCommand(Guid.Parse(userId), productId));
 
@@ -51,7 +51,7 @@ namespace SimpleStore.API.Controllers
         [HttpPatch("{productId}")]
         public async Task<ActionResult> UpdateCartItemQuantity([FromRoute] Guid productId, [FromBody] ItemQuantityDto quantity)
         {
-            var userId = User.FindFirstValue("id");
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             var result = await _bus.InvokeAsync<Result>(new UpdateCartItemQuantityCommand(Guid.Parse(userId), productId, quantity.Quantity));
             return result.ToActionResult();

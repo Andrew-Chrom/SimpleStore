@@ -59,7 +59,7 @@ namespace SimpleStore.Infrastructure.Repositories.Cached
         public async Task UpdateAsync(Product product, CancellationToken ct)
         {
             await _decorator.UpdateAsync(product, ct);
-
+            
             await _cache.RemoveAsync($"product_{product.Id}", ct);
             await InvalidateProductCacheAsync(ct);
         }
@@ -74,6 +74,7 @@ namespace SimpleStore.Infrastructure.Repositories.Cached
 
         public async Task<Guid> CreateAsync(Product product, CancellationToken ct)
         {
+            await InvalidateProductCacheAsync(ct);
             return await _decorator.CreateAsync(product, ct);
         }
 

@@ -25,7 +25,7 @@ namespace SimpleStore.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetOrders([FromQuery] int page = 1, [FromQuery] int pageSize = 50)
         {
-            var userId = User.FindFirstValue("id");
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             
             var orders = await _bus.InvokeAsync<List<Order>>(new GetOrdersQuery(Guid.Parse(userId), page, pageSize));
             return Ok(orders);
@@ -34,7 +34,7 @@ namespace SimpleStore.API.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateOrder()
         {
-            var userId = User.FindFirstValue("id");
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             var result = await _bus.InvokeAsync<Result<string>>(new PlaceOrderCommand(Guid.Parse(userId)));
             return Ok(result);

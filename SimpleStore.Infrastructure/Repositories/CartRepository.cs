@@ -8,9 +8,9 @@ namespace SimpleStore.Infrastructure.Repositories
 {
     public class CartRepository : ICartRepository
     {
-        private readonly ApplicationDbContext _context;
+        private readonly CommandDbContext _context;
 
-        public CartRepository(ApplicationDbContext context)
+        public CartRepository(CommandDbContext context)
         {
             _context = context;
         }

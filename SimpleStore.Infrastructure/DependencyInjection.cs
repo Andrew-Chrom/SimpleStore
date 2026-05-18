@@ -42,14 +42,20 @@ public static class DependencyInjection
         services.AddScoped<IOrderRepository, OrderRepository>();
         services.AddScoped<IOrderItemRepository, OrderItemRepository>();
 
-        services.AddStackExchangeRedisCache(opt =>
+        //services.AddStackExchangeRedisCache(opt =>
+        //{
+        //    string connection = configuration.GetConnectionString("RedisConnection");
+        //    opt.Configuration = connection;
+        //});
+
+        services.AddSingleton<IConnectionMultiplexer>(sp =>
         {
-            string connection = configuration.GetConnectionString("RedisConnection");
-            opt.Configuration = connection; 
+            var redisConnection = configuration.GetConnectionString("RedisConnection");
+            return ConnectionMultiplexer.Connect(redisConnection!);
         });
 
-        services.AddSingleton<IConnectionMultiplexer>(
-            ConnectionMultiplexer.Connect(configuration.GetConnectionString("RedisConnection")));
+        //services.AddSingleton<IConnectionMultiplexer>(
+        //    ConnectionMultiplexer.Connect(configuration.GetConnectionString("RedisConnection")));
 
         services.AddScoped<IOrderService, StripeService>();
         services.AddScoped<IWebhookParser, StripeWebhook>();

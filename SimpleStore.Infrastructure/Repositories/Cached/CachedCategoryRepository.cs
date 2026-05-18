@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using SimpleStore.Application.Interfaces.Repositories;
 using SimpleStore.Domain.Entities;
+using StackExchange.Redis;
 
 namespace SimpleStore.Infrastructure.Repositories.Cached
 {
@@ -10,12 +11,15 @@ namespace SimpleStore.Infrastructure.Repositories.Cached
 
         private readonly CategoryRepository _decorator;
         private readonly IDistributedCache _cache;
+        private readonly IConnectionMultiplexer _multiplexer;
         public CachedCategoryRepository(
             CategoryRepository decorator,
-            IDistributedCache cache)
+            IDistributedCache cache,
+            IConnectionMultiplexer multiplexer)
         {
             _decorator = decorator;
             _cache = cache;
+            _multiplexer = multiplexer;
         }
 
         public async Task<List<Category>> GetAllAsync(int page = 1, int pageSize = 25, CancellationToken ct = default)
@@ -75,17 +79,20 @@ namespace SimpleStore.Infrastructure.Repositories.Cached
         }
         public async Task<Guid> AddAsync(Category category, CancellationToken ct)
         {
+            await InvalidateProductCacheAsync(ct);
             return await _decorator.AddAsync(category, ct);
         }
         public async Task<Guid> UpdateAsync(Category category, CancellationToken ct)
         {
             var id = await _decorator.UpdateAsync(category, ct);
+            await InvalidateProductCacheAsync(ct);
             await _cache.RemoveAsync($"category_{id}", ct);
             return id;  
         }
         public async Task DeleteAsync(Category category, CancellationToken ct)
         {
             await _decorator.DeleteAsync(category, ct);
+            await InvalidateProductCacheAsync(ct);
             await _cache.RemoveAsync($"category_{category.Id}", ct);
         }
 
@@ -97,8 +104,10 @@ namespace SimpleStore.Infrastructure.Repositories.Cached
         private async Task InvalidateProductCacheAsync(CancellationToken ct)
         {
             var server = _multiplexer.GetServer(_multiplexer.GetEndPoints().First());
-            var keys = server.Keys(pattern: "products:page:*").ToArray();
-            await _db.KeyDeleteAsync(keys);
+            var db = _multiplexer.GetDatabase();
+            var keys = server.Keys(pattern: "category:page:*").ToArray();
+            if (keys.Any())
+                await db.KeyDeleteAsync(keys);
         }
 
     }
