@@ -74,23 +74,11 @@ builder.Services.AddAuthentication(options =>
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    await db.Database.MigrateAsync();
-
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
-
-    foreach (var role in new[] { Roles.Admin, Roles.Customer })
-    {
-        if (!await roleManager.RoleExistsAsync(role))
-            await roleManager.CreateAsync(new IdentityRole<Guid>(role));
-    }
-}
-
-
 //using (var scope = app.Services.CreateScope())
 //{
+//    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+//    await db.Database.MigrateAsync();
+
 //    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
 
 //    foreach (var role in new[] { Roles.Admin, Roles.Customer })
@@ -99,6 +87,18 @@ using (var scope = app.Services.CreateScope())
 //            await roleManager.CreateAsync(new IdentityRole<Guid>(role));
 //    }
 //}
+
+
+using (var scope = app.Services.CreateScope())
+{
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
+
+    foreach (var role in new[] { Roles.Admin, Roles.Customer })
+    {
+        if (!await roleManager.RoleExistsAsync(role))
+            await roleManager.CreateAsync(new IdentityRole<Guid>(role));
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
