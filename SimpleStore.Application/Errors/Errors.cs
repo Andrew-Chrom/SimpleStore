@@ -32,6 +32,11 @@ namespace SimpleStore.Application.Errors
             public static readonly DomainError NotFound = new("Order.NotFound", ErrorType.NotFound, "Order item not found");
             public static readonly DomainError Conflict = new("Order.Conflict", ErrorType.Conflict, "Order conflict ");
         }
+        public static class Wishlist
+        {
+            public static readonly DomainError NotFound = new("Wishlist.NotFound", ErrorType.NotFound, "Wishlist item not found");
+            public static readonly DomainError Conflict = new("Wishlist.Conflict", ErrorType.Conflict, "Wishlist conflict ");
+        }
 
         public static class Payment
         {

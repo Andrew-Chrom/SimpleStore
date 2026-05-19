@@ -1,4 +1,6 @@
 ﻿
+using SimpleStore.Application.Common;
+using SimpleStore.Application.Errors;
 using SimpleStore.Application.Interfaces.Repositories;
 
 namespace SimpleStore.Application.Command.WIshlist
@@ -13,10 +15,14 @@ namespace SimpleStore.Application.Command.WIshlist
             _repository = repository;
         }
 
-        public async Task Handle(RemoveWishlistItemCommand cmd, CancellationToken ct)
+        public async Task<Result> Handle(RemoveWishlistItemCommand cmd, CancellationToken ct)
         {
+            if (await _repository.GetByIdAsync(cmd.UserId, cmd.ProductId, ct) is null)
+                return DomainErrors.Wishlist.Conflict;
+                
             await _repository.RemoveAsync(cmd.UserId, cmd.ProductId, ct);
             await _repository.SaveChangesAsync(ct);
+            return Result.Success();
         }
     }
 }

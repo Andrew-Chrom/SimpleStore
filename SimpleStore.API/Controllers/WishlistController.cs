@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SimpleStore.API.Extensions;
 using SimpleStore.Application.Command.WIshlist;
 using SimpleStore.Application.Common;
 using SimpleStore.Application.Dto.Wishlist;
@@ -30,20 +31,19 @@ namespace SimpleStore.API.Controllers
         }
 
         [HttpPost("{productId}")]
-        public async Task<Guid> AddToWishlist(Guid productId)
+        public async Task<ActionResult<Guid>> AddToWishlist(Guid productId)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var result = await _bus.InvokeAsync<Guid>(new AddWishlistItemCommand(Guid.Parse(userId), productId));
-            return result;
-
+            var result = await _bus.InvokeAsync<Result<Guid>>(new AddWishlistItemCommand(Guid.Parse(userId), productId));
+            return result.ToActionResult();
         }
 
         [HttpDelete("{productId}")]
-        public async Task RemoveFromWishlist(Guid productId)
+        public async Task<ActionResult> RemoveFromWishlist(Guid productId)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var result = await _bus.InvokeAsync<Result>(new RemoveWishlistItemCommand(Guid.Parse(userId), productId));
-            return;
+            return result.ToActionResult();
         }
     }
 }

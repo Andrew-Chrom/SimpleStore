@@ -25,6 +25,17 @@ namespace SimpleStore.Infrastructure.Repositories
                 }).ToListAsync(ct);
         }
 
+
+        public async Task<WishlistItemDto> GetByIdAsync(Guid userId, Guid productId, CancellationToken ct)
+        {
+            return await _context.WishlistItems.Where(x => x.UserId == userId && x.ProductId == productId)
+                .Select(x => new WishlistItemDto
+                {
+                    ProductId = x.ProductId,
+                    Name = x.Product.Name
+                }).FirstOrDefaultAsync(ct);
+        }
+
         public async Task<Guid> AddAsync(Guid userId, Guid productId, CancellationToken ct)
         {
             var wishlistItem = new WishlistItem
