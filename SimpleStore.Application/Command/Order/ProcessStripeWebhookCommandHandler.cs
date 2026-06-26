@@ -32,7 +32,7 @@ namespace SimpleStore.Application.Command.Order
                     await _bus.InvokeAsync(new CompleteOrderCommand(paymentEvent.OrderId));
                     return Result.Success();
                 case PaymentEventEnum.PaymentFailed:
-                    return DomainErrors.Payment.InvalidWebhook;
+                    return DomainErrors.Payment.PaymentFailed;
                 default:
                     return DomainErrors.Payment.InvalidWebhook;
             }

@@ -15,7 +15,7 @@ namespace SimpleStore.Application.Command.Auth
         {
             _userManager = userManager;
         }
-        public async Task<Result<string>> Handle(RegisterCommand cmd)
+        public async Task<Result<Guid>> Handle(RegisterCommand cmd)
         {
             if (await _userManager.FindByEmailAsync(cmd.Email) is not null)
                 return DomainErrors.Authentication.EmailExists;
@@ -34,7 +34,7 @@ namespace SimpleStore.Application.Command.Auth
             }
 
             await _userManager.AddToRoleAsync(user, Roles.Customer);
-            return "User registered successfully.";
+            return user.Id;
             
         }
     }

@@ -3,6 +3,7 @@ using SimpleStore.Application.Common;
 using SimpleStore.Application.Dto.Category;
 using SimpleStore.Application.Errors;
 using SimpleStore.Application.Interfaces.Repositories;
+using SimpleStore.Application.Interfaces.UnitOfWork;
 using SimpleStore.Application.Validators;
 using SimpleStore.Domain.Entities;
 using System;
@@ -15,21 +16,22 @@ namespace SimpleStore.Application.Command.Categories
     public class CreateCategoryHandler
     {
         private readonly ICategoryRepository _repository;
-
-        public CreateCategoryHandler(ICategoryRepository repository)
+        private readonly IUnitOfWork _unitOfWork;
+        public CreateCategoryHandler(ICategoryRepository repository, IUnitOfWork unitOfWork)
         {
             _repository = repository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<Result<Guid>> Handle(CreateCategoryCommand command, CancellationToken cancellationToken)
         {
-            var validator = new CreateCategoryCommandValidator();
-            var result = validator.Validate(command);
+            //var validator = new CreateCategoryCommandValidator();
+            //var result = validator.Validate(command);
 
-            if (!result.IsValid)
-            {
-                return DomainErrors.Category.Validation;
-            }
+            //if (!result.IsValid)
+            //{
+            //    return DomainErrors.Category.Validation;
+            //}
 
             var category = new Category
             {
@@ -38,7 +40,7 @@ namespace SimpleStore.Application.Command.Categories
 
             
             var id = await _repository.AddAsync(category, cancellationToken);
-            await _repository.SaveChangesAsync(cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
             return id;
         }
     }

@@ -2,6 +2,7 @@
 using SimpleStore.Application.Common;
 using SimpleStore.Application.Errors;
 using SimpleStore.Application.Interfaces.Repositories;
+using SimpleStore.Application.Interfaces.UnitOfWork;
 using SimpleStore.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -14,12 +15,15 @@ namespace SimpleStore.Application.Command.Cart
     {
         private readonly ICartRepository _cartRepository;
         private readonly IProductsWritableRepository _productRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
         public AddToCartCommandHandler(ICartRepository cartRepository,
-            IProductsWritableRepository productRepository)
+            IProductsWritableRepository productRepository,
+            IUnitOfWork unitOfWork)
         {
             _cartRepository = cartRepository;
             _productRepository = productRepository;
+            _unitOfWork = unitOfWork;
         }
         public async Task<Result<Guid>> Handle(AddToCartCommand cmd, CancellationToken ct)
         {
@@ -35,7 +39,7 @@ namespace SimpleStore.Application.Command.Cart
 
             var cartItem = new CartItem { ProductId = cmd.ProductId, UserId = cmd.UserId, Quantity = 1 };
             var result = await _cartRepository.AddAsync(cartItem, ct);
-            await _cartRepository.SaveChangesAsync(ct);
+            await _unitOfWork.SaveChangesAsync(ct);
             return result;
 
         }

@@ -9,6 +9,5 @@ namespace SimpleStore.Application.Interfaces.Repositories
         Task<Guid> AddAsync(OrderItem orderItem, CancellationToken ct);
         Task<Guid> UpdateAsync(OrderItem orderItem, CancellationToken ct);
         Task DeleteAsync(OrderItem orderItem, CancellationToken ct);
-        Task SaveChangesAsync(CancellationToken ct);
     }
 }

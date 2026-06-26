@@ -44,8 +44,8 @@ namespace SimpleStore.Domain.Stripe
                 PaymentMethodTypes = new List<string> { "card" },
                 LineItems = lineItems,
                 Mode = "payment",
-                SuccessUrl = "https://saleable-calceolate-carolyne.ngrok-free.dev/api/orders/success?sessionId={CHECKOUT_SESSION_ID}",
-                CancelUrl = "https://saleable-calceolate-carolyne.ngrok-free.dev/api/orders/cancel",
+                SuccessUrl = $"{_stripeSettings.SuccessUrl}?sessionId={{CHECKOUT_SESSION_ID}}",
+                CancelUrl = $"{_stripeSettings.CancelUrl}?sessionId={{CHECKOUT_SESSION_ID}}",
                 Metadata = new Dictionary<string, string>
                 {
                     { "orderId", order.Id.ToString() }

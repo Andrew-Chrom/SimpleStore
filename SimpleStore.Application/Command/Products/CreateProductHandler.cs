@@ -1,6 +1,7 @@
 ﻿using SimpleStore.Application.Common;
 using SimpleStore.Application.Errors;
 using SimpleStore.Application.Interfaces.Repositories;
+using SimpleStore.Application.Interfaces.UnitOfWork;
 using SimpleStore.Application.Validators;
 using SimpleStore.Domain.Entities;
 
@@ -16,10 +17,11 @@ namespace SimpleStore.Application.Command.Products
     public class CreateProductHandler
     {
         private readonly IProductsWritableRepository _repository;
-
-        public CreateProductHandler(IProductsWritableRepository repository)
+        private readonly IUnitOfWork _unitOfWork;
+        public CreateProductHandler(IProductsWritableRepository repository, IUnitOfWork unitOfWork)
         {
             _repository = repository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<Result<Guid>> Handle(CreateProductCommand command, CancellationToken cancellationToken)
@@ -40,7 +42,7 @@ namespace SimpleStore.Application.Command.Products
                 CategoryId = command.CategoryId
             };
             var id = await _repository.CreateAsync(product, cancellationToken);
-            await _repository.SaveChangesAsync(cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
             return id;
         }
     }

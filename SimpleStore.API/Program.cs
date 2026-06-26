@@ -1,18 +1,20 @@
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SimpleStore.API.Query.Products;
 using SimpleStore.API.Services;
 using SimpleStore.Application.Command.Products;
 using SimpleStore.Application.Query.Auth;
+using SimpleStore.Application.Validators;
 using SimpleStore.Domain.Constants;
 using SimpleStore.Domain.Options;
 using SimpleStore.Infrastructure;
 using SimpleStore.Infrastructure.Options;
-using StackExchange.Redis;
 using System.Text;
 using Wolverine;
-using Microsoft.EntityFrameworkCore;
+using Wolverine.FluentValidation;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,11 +27,17 @@ builder.Services.AddSwaggerGen();
 
 builder.Host.SerilogConfiguration();
 
+builder.Services.AddValidatorsFromAssemblyContaining<CreateCategoryCommandValidator>();
+
 builder.Host.UseWolverine(opts =>
 {
+    opts.UseRuntimeCompilation();
+
     opts.Discovery.IncludeAssembly(typeof(GetProductsHandler).Assembly);
     opts.Discovery.IncludeAssembly(typeof(CreateProductHandler).Assembly);
     opts.Discovery.IncludeAssembly(typeof(LoginHandler).Assembly);
+
+    opts.UseFluentValidation(RegistrationBehavior.ExplicitRegistration);
 });
 
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -74,23 +82,35 @@ builder.Services.AddAuthentication(options =>
 
 var app = builder.Build();
 
-//using (var scope = app.Services.CreateScope())
-//{
-//    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-//    await db.Database.MigrateAsync();
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        var exceptionHandlerPathFeature = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerPathFeature>();
+        var exception = exceptionHandlerPathFeature?.Error;
 
-//    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
+        if (exception is FluentValidation.ValidationException validationException)
+        {
+            context.Response.StatusCode = StatusCodes.Status422UnprocessableEntity;
+            context.Response.ContentType = "application/json";
 
-//    foreach (var role in new[] { Roles.Admin, Roles.Customer })
-//    {
-//        if (!await roleManager.RoleExistsAsync(role))
-//            await roleManager.CreateAsync(new IdentityRole<Guid>(role));
-//    }
-//}
+            var errors = validationException.Errors.Select(e => e.ErrorMessage).ToList();
 
+            await context.Response.WriteAsJsonAsync(new
+            {
+                Id = "Validation.Error",
+                Type = 422,
+                Description = string.Join(", ", errors)
+            });
+        }
+    });
+});
 
 using (var scope = app.Services.CreateScope())
 {
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await db.Database.MigrateAsync();
+
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
 
     foreach (var role in new[] { Roles.Admin, Roles.Customer })
@@ -100,6 +120,18 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+
+//using (var scope = app.Services.CreateScope())
+//{
+//    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
+
+//    foreach (var role in new[] { Roles.Admin, Roles.Customer })
+//    {
+//        if (!await roleManager.RoleExistsAsync(role))
+//            await roleManager.CreateAsync(new IdentityRole<Guid>(role));
+//    }
+//}
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -107,7 +139,7 @@ if (app.Environment.IsDevelopment())
 
     app.UseSwagger();
 
-    app.UseSwaggerUI(c =>
+    app.UseSwaggerUI(c => 
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "SimpleStore API V1");
     });

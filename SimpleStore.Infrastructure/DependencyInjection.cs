@@ -50,14 +50,14 @@ public static class DependencyInjection
             opt.Configuration = connection;
         });
 
+        services.AddSingleton<IConnectionMultiplexer>(
+            ConnectionMultiplexer.Connect(configuration.GetConnectionString("RedisConnection")));
+
         //services.AddSingleton<IConnectionMultiplexer>(sp =>
         //{
         //    var redisConnection = configuration.GetConnectionString("RedisConnection");
         //    return ConnectionMultiplexer.Connect(redisConnection!);
         //});
-
-        services.AddSingleton<IConnectionMultiplexer>(
-            ConnectionMultiplexer.Connect(configuration.GetConnectionString("RedisConnection")));
 
         services.AddScoped<IOrderService, StripeService>();
         services.AddScoped<IWebhookParser, StripeWebhook>();

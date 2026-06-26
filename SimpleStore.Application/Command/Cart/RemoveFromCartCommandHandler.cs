@@ -2,6 +2,7 @@
 using SimpleStore.Application.Common;
 using SimpleStore.Application.Errors;
 using SimpleStore.Application.Interfaces.Repositories;
+using SimpleStore.Application.Interfaces.UnitOfWork;
 using SimpleStore.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -14,10 +15,11 @@ namespace SimpleStore.Application.Command.Cart
     public class RemoveFromCartCommandHandler
     {
         private readonly ICartRepository _repository;
-
-        public RemoveFromCartCommandHandler(ICartRepository repository)
+        private readonly IUnitOfWork _unitOfWork;
+        public RemoveFromCartCommandHandler(ICartRepository repository, IUnitOfWork unitOfWork)
         {
             _repository = repository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<Result> Handle(RemoveFromCartCommand cmd, CancellationToken ct)
@@ -29,7 +31,7 @@ namespace SimpleStore.Application.Command.Cart
             }
 
             await _repository.DeleteAsync(cartItem, ct);
-            await _repository.SaveChangesAsync(ct);
+            await _unitOfWork.SaveChangesAsync(ct);
             return Result.Success();
         }
 

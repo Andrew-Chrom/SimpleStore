@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using SimpleStore.Application.Common;
 using SimpleStore.Application.Errors;
 using SimpleStore.Application.Interfaces.Orders;
@@ -70,7 +71,20 @@ namespace SimpleStore.Application.Command.Order
             }
             await _productWritbaleRepository.UpdateRangeAsync(products, ct);
 
+
             await _orderRepository.AddAsync(order, ct);
+
+            try
+            {
+                var savedRows = await _unitOfWork.SaveChangesAsync(ct);
+                _logger.LogInformation($"Saved rows: {savedRows}");
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                _logger.LogWarning(ex, "Concurrency conflict while placing order for user {UserId}. Someone else bought the product first.", cmd.UserId);
+
+                return DomainErrors.Order.Conflict;
+            }
 
             var stripeResponse = await _orderService.CreateCheckoutSessionAsync(order, ct);
 
@@ -78,9 +92,7 @@ namespace SimpleStore.Application.Command.Order
             order.StripePaymentIntentId = stripeResponse.PaymentIntentId;
 
             await _cartRepository.ClearCartAsync(cmd.UserId, ct);
-
-            var savedRows = await _unitOfWork.SaveChangesAsync(ct);
-            _logger.LogInformation($"Saved rows: {savedRows}");
+            await _unitOfWork.SaveChangesAsync(ct);
 
             return stripeResponse.Url;
         }

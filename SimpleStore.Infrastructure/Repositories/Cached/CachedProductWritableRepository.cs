@@ -77,12 +77,6 @@ namespace SimpleStore.Infrastructure.Repositories.Cached
             await InvalidateProductCacheAsync(ct);
             return await _decorator.CreateAsync(product, ct);
         }
-
-        public async Task SaveChangesAsync(CancellationToken ct)
-        {
-            await _decorator.SaveChangesAsync(ct);
-        }
-
         private async Task InvalidateProductCacheAsync(CancellationToken ct)
         {
             var server = _multiplexer.GetServer(_multiplexer.GetEndPoints().First());

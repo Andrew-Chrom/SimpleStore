@@ -24,10 +24,10 @@ namespace SimpleStore.API.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult<string>> Register([FromBody] RegisterRequest model)
+        public async Task<ActionResult<Guid>> Register([FromBody] RegisterRequest model)
         {
 
-            var result = await _bus.InvokeAsync<Result<string>>(new RegisterCommand(model.Email, model.Password));
+            var result = await _bus.InvokeAsync<Result<Guid>>(new RegisterCommand(model.Email, model.Password));
 
             return result.ToActionResult();
         }

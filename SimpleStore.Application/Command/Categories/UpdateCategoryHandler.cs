@@ -1,6 +1,7 @@
 ﻿using SimpleStore.Application.Common;
 using SimpleStore.Application.Errors;
 using SimpleStore.Application.Interfaces.Repositories;
+using SimpleStore.Application.Interfaces.UnitOfWork;
 using SimpleStore.Application.Validators;
 
 namespace SimpleStore.Application.Command.Categories
@@ -10,10 +11,11 @@ namespace SimpleStore.Application.Command.Categories
     public class UpdateCategoryHandler
     {
         private readonly ICategoryRepository _repository;
-
-        public UpdateCategoryHandler(ICategoryRepository repository)
+        private readonly IUnitOfWork _unitOfWork;
+        public UpdateCategoryHandler(ICategoryRepository repository, IUnitOfWork unitOfWork)
         {
             _repository = repository;
+            _unitOfWork = unitOfWork;
         }
         public async Task<Result> Handle(UpdateCategoryCommand command, CancellationToken cancellationToken)
         {
@@ -35,7 +37,7 @@ namespace SimpleStore.Application.Command.Categories
             category.Name = command.Name;
             
             await _repository.UpdateAsync(category, cancellationToken);
-            await _repository.SaveChangesAsync(cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
             return Result.Success();
         }
     }

@@ -1,6 +1,7 @@
 ﻿using SimpleStore.Application.Common;
-using SimpleStore.Application.Interfaces.Repositories;
 using SimpleStore.Application.Errors;
+using SimpleStore.Application.Interfaces.Repositories;
+using SimpleStore.Application.Interfaces.UnitOfWork;
 
 namespace SimpleStore.Application.Command.Products
 {
@@ -8,10 +9,11 @@ namespace SimpleStore.Application.Command.Products
     public class DeleteProductHandler
     {
         private readonly IProductsWritableRepository _repository;
-
-        public DeleteProductHandler(IProductsWritableRepository repository)
+        private readonly IUnitOfWork _unitOfWork;
+        public DeleteProductHandler(IProductsWritableRepository repository, IUnitOfWork unitOfWork)
         {
             _repository = repository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<Result> Handle(DeleteProductCommand command, CancellationToken cancellationToken)
@@ -22,7 +24,7 @@ namespace SimpleStore.Application.Command.Products
                 return DomainErrors.Product.NotFound;
 
             await _repository.DeleteAsync(product, cancellationToken);
-            await _repository.SaveChangesAsync(cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
             return Result.Success();
         }
     }

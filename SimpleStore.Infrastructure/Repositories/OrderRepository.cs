@@ -41,9 +41,5 @@ namespace SimpleStore.Infrastructure.Repositories
         {
             _ctx.Orders.Remove(order);
         }
-        public async Task SaveChangesAsync(CancellationToken ct)
-        {
-            await _ctx.SaveChangesAsync(ct);
-        }
     }
 }

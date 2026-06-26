@@ -41,6 +41,8 @@ namespace SimpleStore.Application.Errors
         public static class Payment
         {
             public static readonly DomainError InvalidWebhook = new("Payment.InvalidWebhook", ErrorType.BadRequest, "Invalid Stripe webhook");
+            public static readonly DomainError PaymentFailed = new("Payment.InvalidWebhook", ErrorType.BadRequest, "Invalid Stripe webhook");
+
         }
         public static class Authentication
         {

@@ -7,7 +7,7 @@ using System.Text;
 
 namespace SimpleStore.Application.Validators
 {
-    internal class CreateCategoryCommandValidator : AbstractValidator<CreateCategoryCommand>
+    public class CreateCategoryCommandValidator : AbstractValidator<CreateCategoryCommand>
     {
         public CreateCategoryCommandValidator()
         {

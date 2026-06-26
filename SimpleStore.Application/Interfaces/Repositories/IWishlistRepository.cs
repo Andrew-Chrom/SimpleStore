@@ -14,7 +14,5 @@ namespace SimpleStore.Application.Interfaces.Repositories
         Task<Guid> AddAsync(Guid userId, Guid productId, CancellationToken ct);
         Task RemoveAsync(Guid userId, Guid productId, CancellationToken ct);
         Task ClearWishlistAsync(Guid userId, CancellationToken ct);
-        Task SaveChangesAsync(CancellationToken ct);
-
     }
 }

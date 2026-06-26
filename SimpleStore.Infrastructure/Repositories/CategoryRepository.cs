@@ -7,9 +7,9 @@ namespace SimpleStore.Infrastructure.Repositories
 {
     public class CategoryRepository : ICategoryRepository
     {
-        private readonly ApplicationDbContext _context;
+        private readonly CommandDbContext _context;
 
-        public CategoryRepository(ApplicationDbContext context)
+        public CategoryRepository(CommandDbContext context)
         {
             _context = context;
         }
@@ -38,10 +38,6 @@ namespace SimpleStore.Infrastructure.Repositories
         public async Task DeleteAsync(Category category, CancellationToken ct)
         {
             _context.Categories.Remove(category);
-        }
-        public async Task SaveChangesAsync(CancellationToken ct)
-        {
-            await _context.SaveChangesAsync(ct);
         }
     }
 }

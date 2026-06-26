@@ -57,13 +57,7 @@ namespace SimpleStore.Infrastructure.Repositories
 
         public async Task ClearCartAsync(Guid userId, CancellationToken ct)
         {
-            var items = _context.CartItems.Where(x => x.UserId == userId);
-            _context.CartItems.RemoveRange(items);
-        }
-
-        public async Task SaveChangesAsync(CancellationToken ct)
-        {
-            await _context.SaveChangesAsync(ct);
+            await _context.CartItems.Where(x => x.UserId == userId).ExecuteDeleteAsync(ct);
         }
     }
 }

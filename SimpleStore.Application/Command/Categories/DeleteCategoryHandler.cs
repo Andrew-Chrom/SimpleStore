@@ -1,6 +1,7 @@
 ﻿using SimpleStore.Application.Common;
 using SimpleStore.Application.Errors;
 using SimpleStore.Application.Interfaces.Repositories;
+using SimpleStore.Application.Interfaces.UnitOfWork;
 
 namespace SimpleStore.Application.Command.Categories
 {
@@ -8,10 +9,11 @@ namespace SimpleStore.Application.Command.Categories
     public class DeleteCategoryHandler
     {
         private readonly ICategoryRepository _repository;
-
-        public DeleteCategoryHandler(ICategoryRepository repository)
+        private readonly IUnitOfWork _unitOfWork;
+        public DeleteCategoryHandler(ICategoryRepository repository, IUnitOfWork unitOfWork)
         {
             _repository = repository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<Result> Handle(DeleteCategoryCommand command, CancellationToken cancellationToken)
@@ -21,7 +23,7 @@ namespace SimpleStore.Application.Command.Categories
                 return DomainErrors.Category.NotFound;
 
             await _repository.DeleteAsync(category, cancellationToken);
-            await _repository.SaveChangesAsync(cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
             return Result.Success();
         }
     }

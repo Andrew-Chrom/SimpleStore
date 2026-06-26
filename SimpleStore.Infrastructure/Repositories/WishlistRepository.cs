@@ -59,10 +59,5 @@ namespace SimpleStore.Infrastructure.Repositories
             var items = _context.WishlistItems.Where(x => x.UserId == userId);
             _context.WishlistItems.RemoveRange(items);
         }
-
-        public async Task SaveChangesAsync(CancellationToken ct)
-        {
-            await _context.SaveChangesAsync(ct);
-        }
     }
 }

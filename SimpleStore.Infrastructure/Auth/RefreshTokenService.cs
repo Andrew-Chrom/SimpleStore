@@ -20,7 +20,7 @@ namespace SimpleStore.Infrastructure.Auth
         }
         public async Task<string> GenerateAsync(User user)
         {
-            return _tokenGenerator.Generate(_jwtSettings.AccessTokenSecret,
+            return _tokenGenerator.Generate(_jwtSettings.RefreshTokenSecret,
                 _jwtSettings.Issuer,
                 _jwtSettings.Audience,
                 _jwtSettings.AccessTokenExpirationMinutes);
