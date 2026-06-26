@@ -18,9 +18,9 @@ namespace SimpleStore.Infrastructure.Auth
             _tokenGenerator = tokenGenerator;
             _jwtSettings = jwtSettings.Value;
         }
-        public string Generate(User user)
+        public async Task<string> GenerateAsync(User user)
         {
-            return _tokenGenerator.Generate(_jwtSettings.AccessTokenSecret,
+            return _tokenGenerator.Generate(_jwtSettings.RefreshTokenSecret,
                 _jwtSettings.Issuer,
                 _jwtSettings.Audience,
                 _jwtSettings.AccessTokenExpirationMinutes);

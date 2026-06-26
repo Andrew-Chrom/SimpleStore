@@ -1,11 +1,9 @@
-﻿using SimpleStore.Application.Dto.Product;
+﻿using SimpleStore.Application.Common;
+using SimpleStore.Application.Errors;
 using SimpleStore.Application.Interfaces.Repositories;
+using SimpleStore.Application.Interfaces.UnitOfWork;
 using SimpleStore.Application.Validators;
 using SimpleStore.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
 
 namespace SimpleStore.Application.Command.Products
 {
@@ -18,28 +16,21 @@ namespace SimpleStore.Application.Command.Products
         Guid CategoryId);
     public class CreateProductHandler
     {
-        public readonly IProductsWritableRepository _repository;
-
-        public CreateProductHandler(IProductsWritableRepository repository)
+        private readonly IProductsWritableRepository _repository;
+        private readonly IUnitOfWork _unitOfWork;
+        public CreateProductHandler(IProductsWritableRepository repository, IUnitOfWork unitOfWork)
         {
             _repository = repository;
+            _unitOfWork = unitOfWork;
         }
 
-        public async Task<Guid> Handle(CreateProductCommand command, CancellationToken cancellationToken)
+        public async Task<Result<Guid>> Handle(CreateProductCommand command, CancellationToken cancellationToken)
         {
             var validator = new CreateProductCommandValidator();
             var result = validator.Validate(command);
 
-            if(!result.IsValid)
-            {
-                var error = "";
-                foreach (var failure in result.Errors)
-                {
-                    error += failure + "\n";
-                }
-
-                throw new ValidationException(error);
-            }
+            if (!result.IsValid)
+                return DomainErrors.Product.Validation;
 
             var product = new Product
             {
@@ -50,8 +41,9 @@ namespace SimpleStore.Application.Command.Products
                 StockQuantity = command.StockQuantity,
                 CategoryId = command.CategoryId
             };
-
-            return await _repository.CreateAsync(product, cancellationToken);
+            var id = await _repository.CreateAsync(product, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            return id;
         }
     }
 }

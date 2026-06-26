@@ -1,6 +1,4 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SimpleStore.Domain.Entities
 {
@@ -8,6 +6,7 @@ namespace SimpleStore.Domain.Entities
     {
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
-
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
     }
 }

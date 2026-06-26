@@ -7,7 +7,7 @@ namespace SimpleStore.Application.Interfaces.Auth
 {
     public interface ITokenService
     {
-        string Generate(User user);
+        Task<string> GenerateAsync(User user);
     }
     public interface IAccessTokenService : ITokenService
     {

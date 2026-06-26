@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using SimpleStore.Application.Common;
+using SimpleStore.Application.Errors;
+using SimpleStore.Domain.Constants;
 using SimpleStore.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace SimpleStore.Application.Command.Auth
 {
@@ -15,12 +15,11 @@ namespace SimpleStore.Application.Command.Auth
         {
             _userManager = userManager;
         }
-        public async Task<IdentityResult> Handle(RegisterCommand cmd)
+        public async Task<Result<Guid>> Handle(RegisterCommand cmd)
         {
             if (await _userManager.FindByEmailAsync(cmd.Email) is not null)
-            {
-                throw new Exception("User with this email exists");
-            }
+                return DomainErrors.Authentication.EmailExists;
+            
 
             var user = new User
             {
@@ -29,7 +28,14 @@ namespace SimpleStore.Application.Command.Auth
             };
 
             var result = await _userManager.CreateAsync(user, cmd.Password);
-            return result;
+            if (!result.Succeeded)
+            {
+                return DomainErrors.Authentication.IdentityError(result.Errors);
+            }
+
+            await _userManager.AddToRoleAsync(user, Roles.Customer);
+            return user.Id;
+            
         }
     }
 }

@@ -30,6 +30,9 @@ namespace SimpleStore.Infrastructure.Configurations
                 .WithMany()
                 .HasForeignKey(p => p.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Property(p => p.xmin)
+                   .IsRowVersion();
         }
     }
 }

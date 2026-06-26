@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
-
+﻿
 namespace SimpleStore.Domain.Entities
 {
     public class RefreshToken
@@ -10,7 +6,10 @@ namespace SimpleStore.Domain.Entities
         public Guid Id { get; set; }
         public string Token { get; set; }
         public Guid UserId { get; set; }
-        [ForeignKey(nameof(UserId))]
-        public User User;
+        public User User { get; set; }
+        public DateTime CreatedAt {  get; set; }
+        public DateTime ExpiresAt { get; set; }
+        public DateTime RevokedAt { get; set; }
+
     }
 }

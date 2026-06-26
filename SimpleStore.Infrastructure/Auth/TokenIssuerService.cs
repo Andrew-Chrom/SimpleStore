@@ -21,12 +21,12 @@ namespace SimpleStore.Infrastructure.Auth
 
         public async Task<AuthenticateResponse> IssueTokensAsync(User user, CancellationToken cancellationToken)
         {
-            var refreshToken = _refreshTokenService.Generate(user);
+            var refreshToken = await _refreshTokenService.GenerateAsync(user);
             await _context.RefreshTokens.AddAsync(new RefreshToken { UserId = user.Id, Token = refreshToken }, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
             return new AuthenticateResponse
             {
-                AccessToken = _accessTokenService.Generate(user),
+                AccessToken = await _accessTokenService.GenerateAsync(user),
                 RefreshToken = refreshToken
             };
         }

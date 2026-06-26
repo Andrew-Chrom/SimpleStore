@@ -1,6 +1,9 @@
 ﻿using FluentValidation;
+using SimpleStore.Application.Common;
 using SimpleStore.Application.Dto.Category;
+using SimpleStore.Application.Errors;
 using SimpleStore.Application.Interfaces.Repositories;
+using SimpleStore.Application.Interfaces.UnitOfWork;
 using SimpleStore.Application.Validators;
 using SimpleStore.Domain.Entities;
 using System;
@@ -12,35 +15,33 @@ namespace SimpleStore.Application.Command.Categories
     public record CreateCategoryCommand(string Name);
     public class CreateCategoryHandler
     {
-        public readonly ICategoryRepository _repository;
-
-        public CreateCategoryHandler(ICategoryRepository repository)
+        private readonly ICategoryRepository _repository;
+        private readonly IUnitOfWork _unitOfWork;
+        public CreateCategoryHandler(ICategoryRepository repository, IUnitOfWork unitOfWork)
         {
             _repository = repository;
+            _unitOfWork = unitOfWork;
         }
 
-        public async Task<Guid> Handle(CreateCategoryCommand command, CancellationToken cancellationToken)
+        public async Task<Result<Guid>> Handle(CreateCategoryCommand command, CancellationToken cancellationToken)
         {
-            var validator = new CreateCategoryCommandValidator();
-            var result = validator.Validate(command);
+            //var validator = new CreateCategoryCommandValidator();
+            //var result = validator.Validate(command);
 
-            if (!result.IsValid)
-            {
-                var error = "";
-                foreach (var failure in result.Errors)
-                {
-                    error += failure + "\n";
-                }
-
-                throw new ValidationException(error);
-            }
+            //if (!result.IsValid)
+            //{
+            //    return DomainErrors.Category.Validation;
+            //}
 
             var category = new Category
             {
                 Name = command.Name
             };
 
-            return await _repository.AddAsync(category, cancellationToken);
+            
+            var id = await _repository.AddAsync(category, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            return id;
         }
     }
 }

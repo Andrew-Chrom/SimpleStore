@@ -1,14 +1,19 @@
-﻿// SimpleStore.Infrastructure/DependencyInjection.cs
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SimpleStore.Application.Interfaces.Auth;
+using SimpleStore.Application.Interfaces.Orders;
 using SimpleStore.Application.Interfaces.Repositories;
+using SimpleStore.Application.Interfaces.UnitOfWork;
 using SimpleStore.Domain.Entities;
+using SimpleStore.Domain.Stripe;
 using SimpleStore.Infrastructure;
 using SimpleStore.Infrastructure.Auth;
 using SimpleStore.Infrastructure.Repositories;
+using SimpleStore.Infrastructure.Repositories.Cached;
+using SimpleStore.Infrastructure.Stripe;
+using StackExchange.Redis;
 
 public static class DependencyInjection
 {
@@ -24,11 +29,39 @@ public static class DependencyInjection
         services.AddScoped<QueryDbContext>();
         services.AddScoped<CommandDbContext>();
 
+        services.AddScoped<ProductsWritableRepository>();
+        services.AddScoped<IProductsWritableRepository, CachedProductWritableRepository>();
+        services.AddScoped<ProductsReadonlyRepository>();
+        services.AddScoped<IProductsReadonlyRepository, CachedProductReadableRepository>();
 
-        services.AddScoped<IProductsWritableRepository, ProductsWritableRepository>();
+        services.AddScoped<CategoryRepository>();
+        services.AddScoped<ICategoryRepository, CachedCategoryRepository>();
 
-        services.AddScoped<IProductsReadonlyRepository, ProductsReadonlyRepository>();
-        services.AddScoped<ICategoryRepository, CategoryRepository>();
+        services.AddScoped<ICartRepository, CartRepository>();
+        
+        services.AddScoped<IOrderRepository, OrderRepository>();
+        services.AddScoped<IOrderItemRepository, OrderItemRepository>();
+
+        services.AddScoped<IWishlistRepository, WishlistRepository>();
+
+        services.AddStackExchangeRedisCache(opt =>
+        {
+            string connection = configuration.GetConnectionString("RedisConnection");
+            opt.Configuration = connection;
+        });
+
+        services.AddSingleton<IConnectionMultiplexer>(
+            ConnectionMultiplexer.Connect(configuration.GetConnectionString("RedisConnection")));
+
+        //services.AddSingleton<IConnectionMultiplexer>(sp =>
+        //{
+        //    var redisConnection = configuration.GetConnectionString("RedisConnection");
+        //    return ConnectionMultiplexer.Connect(redisConnection!);
+        //});
+
+        services.AddScoped<IOrderService, StripeService>();
+        services.AddScoped<IWebhookParser, StripeWebhook>();
+        services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<CommandDbContext>());
 
         services.AddScoped<ITokenGenerator, TokenGenerator>();
         services.AddScoped<IAccessTokenService, AccessTokenService>();
