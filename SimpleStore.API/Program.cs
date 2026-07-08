@@ -1,4 +1,5 @@
 using FluentValidation;
+using JasperFx.CodeGeneration;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -37,6 +38,8 @@ builder.Host.UseWolverine(opts =>
     opts.Discovery.IncludeAssembly(typeof(CreateProductHandler).Assembly);
     opts.Discovery.IncludeAssembly(typeof(LoginHandler).Assembly);
 
+    //opts.CodeGeneration.TypeLoadMode = TypeLoadMode.Auto;
+    opts.CodeGeneration.AlwaysUseServiceLocationFor<Microsoft.EntityFrameworkCore.DbContextOptions<SimpleStore.Infrastructure.ApplicationDbContext>>();
     opts.UseFluentValidation(RegistrationBehavior.ExplicitRegistration);
 });
 
