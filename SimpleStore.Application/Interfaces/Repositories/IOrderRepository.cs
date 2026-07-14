@@ -12,5 +12,6 @@ namespace SimpleStore.Application.Interfaces.Repositories
         Task<Guid> AddAsync(Order order, CancellationToken ct);
         Task<Guid> UpdateAsync(Order order, CancellationToken ct);
         Task DeleteAsync(Order order, CancellationToken ct);
+        Task<List<Order>> GetExpiredPendingOrdersAsync(DateTime expirationTime, CancellationToken ct);
     }
 }

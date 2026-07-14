@@ -9,6 +9,7 @@ using SimpleStore.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Transactions;
 
 namespace SimpleStore.Application.Command.Categories
 {
@@ -37,11 +38,19 @@ namespace SimpleStore.Application.Command.Categories
             {
                 Name = command.Name
             };
+            using (var scope = new TransactionScope(TransactionScopeOption.Suppress, TransactionScopeAsyncFlowOption.Enabled))
+            {
+                var id = await _repository.AddAsync(category, cancellationToken);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            
-            var id = await _repository.AddAsync(category, cancellationToken);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-            return id;
+                scope.Complete(); // Кажемо EF зберегти все негайно
+                return id;
+            }
+
+            //var id = await _repository.AddAsync(category, cancellationToken);
+            //var changes = await _unitOfWork.SaveChangesAsync(cancellationToken);
+            //Console.WriteLine($"SAVED CHANGES: {changes}");
+            //return id;
         }
     }
 }

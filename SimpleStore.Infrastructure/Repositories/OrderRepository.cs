@@ -41,5 +41,11 @@ namespace SimpleStore.Infrastructure.Repositories
         {
             _ctx.Orders.Remove(order);
         }
+        public async Task<List<Order>> GetExpiredPendingOrdersAsync(DateTime expirationTime, CancellationToken ct)
+        {
+            return await _ctx.Orders
+                .Where(o => o.Status == OrderStatus.Pending && o.CreatedAt <= expirationTime)
+                .ToListAsync(ct);
+        }
     }
 }

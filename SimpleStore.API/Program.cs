@@ -1,4 +1,5 @@
 using FluentValidation;
+using Hangfire;
 using JasperFx.CodeGeneration;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -13,6 +14,7 @@ using SimpleStore.Domain.Constants;
 using SimpleStore.Domain.Options;
 using SimpleStore.Infrastructure;
 using SimpleStore.Infrastructure.Options;
+using SimpleStore.Infrastructure.OrderExpirationService;
 using System.Text;
 using Wolverine;
 using Wolverine.FluentValidation;
@@ -123,6 +125,13 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+app.UseHangfireDashboard();
+
+var recurringJobManager = app.Services.GetRequiredService<IRecurringJobManager>();
+recurringJobManager.AddOrUpdate<OrderExpirationService>(
+    "cancel-expired-orders",
+    x => x.CancelExpiredOrdersAsync(CancellationToken.None),
+    Cron.MinuteInterval(1));
 
 //using (var scope = app.Services.CreateScope())
 //{

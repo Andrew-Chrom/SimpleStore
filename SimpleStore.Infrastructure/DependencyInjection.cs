@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Hangfire;
+using Hangfire.PostgreSql;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,6 +12,7 @@ using SimpleStore.Domain.Entities;
 using SimpleStore.Domain.Stripe;
 using SimpleStore.Infrastructure;
 using SimpleStore.Infrastructure.Auth;
+using SimpleStore.Infrastructure.OrderExpirationService;
 using SimpleStore.Infrastructure.Repositories;
 using SimpleStore.Infrastructure.Repositories.Cached;
 using SimpleStore.Infrastructure.Stripe;
@@ -59,9 +62,26 @@ public static class DependencyInjection
         //    return ConnectionMultiplexer.Connect(redisConnection!);
         //});
 
+        services.AddTransient<IOrderExpirationService, OrderExpirationService>();
+
+        services.AddHangfire((sp, config) =>
+        {
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
+            config.UsePostgreSqlStorage(c =>
+                c.UseNpgsqlConnection(connectionString));
+        });
+
+        services.AddHangfireServer();
+
+        //RecurringJob.AddOrUpdate<IOrderExpirationService>(
+        //    "cancel-expired-orders",
+        //    x => x.CancelExpiredOrdersAsync(CancellationToken.None),
+        //    Cron.MinuteInterval(1));
+
         services.AddScoped<IOrderService, StripeService>();
         services.AddScoped<IWebhookParser, StripeWebhook>();
-        services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<CommandDbContext>());
+        //services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<CommandDbContext>());
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         services.AddScoped<ITokenGenerator, TokenGenerator>();
         services.AddScoped<IAccessTokenService, AccessTokenService>();
